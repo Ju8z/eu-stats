@@ -20,6 +20,16 @@ databaseChangeLog:
             stripComments: false
 
   - changeSet:
+      id: create-current-month-pageviews-partition
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/create_current_month_partition.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
       id: create-aggregation-tables
       author: jubz
       changes:
