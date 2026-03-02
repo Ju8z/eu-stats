@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-sites
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/create_sites.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: create-pageviews
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/create_pageviews.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: create-aggregation-tables
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/create_aggregation_tables.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: create-indexes
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/create_indexes.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
