@@ -48,3 +48,63 @@ databaseChangeLog:
             relativeToChangelogFile: false
             splitStatements: true
             stripComments: false
+
+  - changeSet:
+      id: drop-obsolete-daily-stats-metrics
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/drop_obsolete_daily_stats_metrics.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: drop-obsolete-session-metrics
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/drop_obsolete_session_metrics.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: drop-obsolete-pageview-session-column
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/drop_obsolete_pageview_session_column.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: drop-obsolete-utm-tracking
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/drop_obsolete_utm_tracking.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: enable-pageviews-site-cascade-delete
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/enable_pageviews_site_cascade_delete.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: drop-obsolete-site-soft-delete-columns
+      author: jubz
+      changes:
+        - sqlFile:
+            path: db/migration/drop_obsolete_site_soft_delete_columns.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false

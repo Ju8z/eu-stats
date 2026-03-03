@@ -38,6 +38,7 @@ public class Site {
 		if (createdAt == null) {
 			createdAt = now;
 		}
+		
 		updatedAt = now;
 		if (isActive == null) {
 			isActive = true;

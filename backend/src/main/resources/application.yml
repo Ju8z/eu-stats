@@ -1,0 +1,43 @@
+spring:
+  config:
+    import: optional:file:.env[.properties],optional:file:../.env[.properties]
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:analytics}
+    username: ${DB_USERNAME:eu-stats}
+    password: ${DB_PASSWORD:eu-stats}
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 200
+        order_inserts: true
+        order_updates: true
+        format_sql: true
+
+  task:
+    scheduling:
+      pool:
+        size: ${SPRING_TASK_SCHEDULING_POOL_SIZE:4}
+      thread-name-prefix: ${SPRING_TASK_SCHEDULING_THREAD_NAME_PREFIX:scheduling-}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  tracker-base-url: ${APP_TRACKER_BASE_URL:http://localhost:8080}
+  daily-salt-secret: ${APP_DAILY_SALT_SECRET:alfatrainingssalz}
+  data-retention-months: ${APP_DATA_RETENTION_MONTHS:24}
+  realtime-window-minutes: ${APP_REALTIME_WINDOW_MINUTES:30}
+  cors-origins: ${APP_CORS_ORIGINS:http://localhost:5173}
+  geo-ip-api-url: ${GEOIP_API_URL:https://api.country.is}
+
+logging:
+  level:
+    eu.stats: DEBUG

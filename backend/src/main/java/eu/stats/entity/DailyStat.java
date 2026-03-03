@@ -32,37 +32,7 @@ public class DailyStat {
 	private Integer uniqueVisitors;
 	
 	@Column(nullable = false)
-	private Integer totalSessions;
-	
-	@Column(nullable = false)
-	private Integer bounceCount;
-	
-	@Column(nullable = false)
-	private Long totalSessionDurationSeconds;
-	
-	@Column(nullable = false)
-	private Integer totalPageDepth;
-	
-	@Column(nullable = false)
 	private OffsetDateTime createdAt;
-	
-	public DailyStat() {
-	}
-	
-	public DailyStat(Long id, Long siteId, LocalDate statDate, Integer totalPageviews, Integer uniqueVisitors,
-			Integer totalSessions, Integer bounceCount, Long totalSessionDurationSeconds, Integer totalPageDepth,
-			OffsetDateTime createdAt) {
-		this.id = id;
-		this.siteId = siteId;
-		this.statDate = statDate;
-		this.totalPageviews = totalPageviews;
-		this.uniqueVisitors = uniqueVisitors;
-		this.totalSessions = totalSessions;
-		this.bounceCount = bounceCount;
-		this.totalSessionDurationSeconds = totalSessionDurationSeconds;
-		this.totalPageDepth = totalPageDepth;
-		this.createdAt = createdAt;
-	}
 	
 	@PrePersist
 	public void onPrePersist() {
@@ -109,38 +79,6 @@ public class DailyStat {
 	
 	public void setUniqueVisitors(Integer uniqueVisitors) {
 		this.uniqueVisitors = uniqueVisitors;
-	}
-	
-	public Integer getTotalSessions() {
-		return totalSessions;
-	}
-	
-	public void setTotalSessions(Integer totalSessions) {
-		this.totalSessions = totalSessions;
-	}
-	
-	public Integer getBounceCount() {
-		return bounceCount;
-	}
-	
-	public void setBounceCount(Integer bounceCount) {
-		this.bounceCount = bounceCount;
-	}
-	
-	public Long getTotalSessionDurationSeconds() {
-		return totalSessionDurationSeconds;
-	}
-	
-	public void setTotalSessionDurationSeconds(Long totalSessionDurationSeconds) {
-		this.totalSessionDurationSeconds = totalSessionDurationSeconds;
-	}
-	
-	public Integer getTotalPageDepth() {
-		return totalPageDepth;
-	}
-	
-	public void setTotalPageDepth(Integer totalPageDepth) {
-		this.totalPageDepth = totalPageDepth;
 	}
 	
 	public OffsetDateTime getCreatedAt() {

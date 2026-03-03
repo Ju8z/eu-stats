@@ -23,9 +23,6 @@ public class PageView {
 	@Column(nullable = false, length = 64)
 	private String visitorHash;
 	
-	@Column(nullable = false, length = 64)
-	private String sessionId;
-	
 	@Column(nullable = false, length = 2048)
 	private String pageUrl;
 	
@@ -37,10 +34,6 @@ public class PageView {
 	
 	@Column(length = 20)
 	private String referrerCategory;
-	
-	private String utmSource;
-	private String utmMedium;
-	private String utmCampaign;
 	
 	@Column(length = 100)
 	private String browser;
@@ -92,23 +85,18 @@ public class PageView {
 	public PageView() {
 	}
 	
-	public PageView(Long id, Long siteId, String visitorHash, String sessionId, String pageUrl, String pageTitle,
-			String referrer, String referrerCategory, String utmSource, String utmMedium, String utmCampaign,
-			String browser, String browserVersion, String os, String osVersion, String deviceType,
+	public PageView(Long id, Long siteId, String visitorHash, String pageUrl, String pageTitle,
+			String referrer, String referrerCategory, String browser, String browserVersion, String os, String osVersion, String deviceType,
 			String screenResolution, String viewport, String language, String country, String city,
 			String continent, String subdivision, String eventType, String eventName, OffsetDateTime viewedAt,
 			OffsetDateTime createdAt) {
 		this.id = id;
 		this.siteId = siteId;
 		this.visitorHash = visitorHash;
-		this.sessionId = sessionId;
 		this.pageUrl = pageUrl;
 		this.pageTitle = pageTitle;
 		this.referrer = referrer;
 		this.referrerCategory = referrerCategory;
-		this.utmSource = utmSource;
-		this.utmMedium = utmMedium;
-		this.utmCampaign = utmCampaign;
 		this.browser = browser;
 		this.browserVersion = browserVersion;
 		this.os = os;
@@ -151,14 +139,6 @@ public class PageView {
 		this.visitorHash = visitorHash;
 	}
 	
-	public String getSessionId() {
-		return sessionId;
-	}
-	
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
-	}
-	
 	public String getPageUrl() {
 		return pageUrl;
 	}
@@ -189,30 +169,6 @@ public class PageView {
 	
 	public void setReferrerCategory(String referrerCategory) {
 		this.referrerCategory = referrerCategory;
-	}
-	
-	public String getUtmSource() {
-		return utmSource;
-	}
-	
-	public void setUtmSource(String utmSource) {
-		this.utmSource = utmSource;
-	}
-	
-	public String getUtmMedium() {
-		return utmMedium;
-	}
-	
-	public void setUtmMedium(String utmMedium) {
-		this.utmMedium = utmMedium;
-	}
-	
-	public String getUtmCampaign() {
-		return utmCampaign;
-	}
-	
-	public void setUtmCampaign(String utmCampaign) {
-		this.utmCampaign = utmCampaign;
 	}
 	
 	public String getBrowser() {

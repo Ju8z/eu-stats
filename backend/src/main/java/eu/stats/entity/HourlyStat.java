@@ -29,9 +29,6 @@ public class HourlyStat {
 	@Column(nullable = false)
 	private Integer uniqueVisitors;
 	
-	@Column(nullable = false)
-	private Integer totalSessions;
-	
 	public Long getId() {
 		return id;
 	}
@@ -70,13 +67,5 @@ public class HourlyStat {
 	
 	public void setUniqueVisitors(Integer uniqueVisitors) {
 		this.uniqueVisitors = uniqueVisitors;
-	}
-	
-	public Integer getTotalSessions() {
-		return totalSessions;
-	}
-	
-	public void setTotalSessions(Integer totalSessions) {
-		this.totalSessions = totalSessions;
 	}
 }
