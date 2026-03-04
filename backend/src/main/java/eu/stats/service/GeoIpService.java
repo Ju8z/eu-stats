@@ -30,7 +30,7 @@ public class GeoIpService {
 	public GeoIpResult resolve(String ip) {
 		String hashedIp = hashUtil.sha256Hex(ip);
 		Instant now = Instant.now();
-		
+		//TODO: Probabyl not needed, since it will be working only locally
 		CacheEntry cached = cache.get(hashedIp);
 		if (cached != null && cached.expiresAt().isAfter(now)) {
 			return cached.value();
