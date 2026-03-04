@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16
+    image: postgres:18.2
     container_name: eu-stats-postgres
     restart: unless-stopped
     environment:
@@ -8,6 +8,9 @@ services:
       POSTGRES_USER: ${DB_USERNAME:-eu-stats}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-eu-stats}
     ports:
-      - "5432:5432"
+      - "5430:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
+
+volumes:
+  pgdata:
