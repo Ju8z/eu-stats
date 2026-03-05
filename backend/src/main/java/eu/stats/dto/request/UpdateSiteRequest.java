@@ -13,4 +13,5 @@ public record UpdateSiteRequest(
 		@Size(max = 255)
 		String domain
 ) {
+	
 }

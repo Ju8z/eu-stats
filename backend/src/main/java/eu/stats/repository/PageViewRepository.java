@@ -76,16 +76,6 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 			@Param("fromTs") OffsetDateTime fromTs,
 			@Param("toTs") OffsetDateTime toTs);
 	
-	@Query(value = """
-			SELECT COUNT(*)
-			FROM pageviews
-			WHERE site_id = :siteId
-			  AND viewed_at BETWEEN :fromTs AND :toTs
-			""", nativeQuery = true)
-	long countForRange(@Param("siteId") Long siteId,
-			@Param("fromTs") OffsetDateTime fromTs,
-			@Param("toTs") OffsetDateTime toTs);
-	
 	@Modifying
 	@Query(value = "DELETE FROM pageviews WHERE viewed_at < :cutoff", nativeQuery = true)
 	int deleteOlderThan(@Param("cutoff") OffsetDateTime cutoff);

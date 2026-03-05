@@ -1,9 +1,9 @@
 package eu.stats.config;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
@@ -16,9 +16,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
-	
+
 	private final AppProperties appProperties;
-	
+
 	public CorsConfig(AppProperties appProperties) {
 		this.appProperties = appProperties;
 	}
@@ -27,38 +27,29 @@ public class CorsConfig implements WebMvcConfigurer {
 	public void addCorsMappings(@NonNull CorsRegistry registry) {
 		registry.addMapping("/**")
 				.allowedOriginPatterns(resolveAllowedOriginPatterns().toArray(String[]::new))
-				.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+				.allowedMethods("GET", "POST", "PUT", "DELETE")
 				.allowedHeaders("*")
 				.allowCredentials(true);
 	}
 	
 	private List<String> resolveAllowedOriginPatterns() {
-		Set<String> allowedOriginPatterns = new LinkedHashSet<>();
 		List<String> origins = appProperties.getCorsOrigins();
 		
-		if (origins == null || origins.isEmpty()) {
-			allowedOriginPatterns.add("*");
-		} else {
-			for (String originEntry : origins) {
-				if (originEntry == null) {
-					continue;
-				}
-				// Supports both YAML list values and comma-separated env var values.
-				for (String token : originEntry.split(",")) {
-					String trimmed = token.trim();
-					if (!trimmed.isEmpty()) {
-						allowedOriginPatterns.add(trimmed);
-					}
-				}
-			}
-		}
+		// Supports both YAML list values and comma-separated env var values
+		List<String> configured = (origins == null || origins.isEmpty())
+				? List.of("*")
+				: origins.stream()
+				.filter(Objects::nonNull)
+				.flatMap(entry -> Arrays.stream(entry.split(",")))
+				.map(String::trim)
+				.filter(s -> !s.isEmpty())
+				.toList();
 		
-		// Local file-based test pages send Origin: null.
-		allowedOriginPatterns.add("null");
-		// Spring's origin pattern syntax for any port uses [*].
-		allowedOriginPatterns.add("http://localhost:[*]");
-		allowedOriginPatterns.add("http://127.0.0.1:[*]");
+		List<String> result = new ArrayList<>(configured);
+		result.add("null");                     // local file-based test pages send Origin: null
+		result.add("http://localhost:[*]");      // Spring's origin pattern syntax for any port
+		result.add("http://127.0.0.1:[*]");
 		
-		return new ArrayList<>(allowedOriginPatterns);
+		return result;
 	}
 }

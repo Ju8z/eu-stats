@@ -23,7 +23,6 @@ public record OverviewStatsResponse(
 	
 	public record Comparison(
 			
-			Period previousPeriod,
 			double pageviewsChange,
 			double visitorsChange
 	

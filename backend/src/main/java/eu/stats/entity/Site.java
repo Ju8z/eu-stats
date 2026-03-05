@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
@@ -25,29 +24,13 @@ public class Site {
 	@Column(nullable = false)
 	private String name;
 	
-	@Column(nullable = false)
-	private Boolean isActive;
-	
 	private OffsetDateTime createdAt;
-	private OffsetDateTime updatedAt;
-	private OffsetDateTime deletedAt;
-	
+
 	@PrePersist
 	public void onPrePersist() {
-		OffsetDateTime now = OffsetDateTime.now();
 		if (createdAt == null) {
-			createdAt = now;
+			createdAt = OffsetDateTime.now();
 		}
-		
-		updatedAt = now;
-		if (isActive == null) {
-			isActive = true;
-		}
-	}
-	
-	@PreUpdate
-	public void onPreUpdate() {
-		updatedAt = OffsetDateTime.now();
 	}
 	
 	public Long getId() {
@@ -74,14 +57,6 @@ public class Site {
 		this.name = name;
 	}
 	
-	public Boolean getIsActive() {
-		return isActive;
-	}
-	
-	public void setIsActive(Boolean isActive) {
-		this.isActive = isActive;
-	}
-	
 	public OffsetDateTime getCreatedAt() {
 		return createdAt;
 	}
@@ -90,19 +65,4 @@ public class Site {
 		this.createdAt = createdAt;
 	}
 	
-	public OffsetDateTime getUpdatedAt() {
-		return updatedAt;
-	}
-	
-	public void setUpdatedAt(OffsetDateTime updatedAt) {
-		this.updatedAt = updatedAt;
-	}
-	
-	public OffsetDateTime getDeletedAt() {
-		return deletedAt;
-	}
-	
-	public void setDeletedAt(OffsetDateTime deletedAt) {
-		this.deletedAt = deletedAt;
-	}
 }

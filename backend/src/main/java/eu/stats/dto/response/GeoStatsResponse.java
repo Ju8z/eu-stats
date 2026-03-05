@@ -17,5 +17,7 @@ public record GeoStatsResponse(
 			double percentage
 	
 	) {
+	
 	}
+	
 }
