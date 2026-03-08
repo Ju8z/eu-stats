@@ -46,34 +46,36 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 			@Param("toDate") LocalDate toDate);
 	
 	@Query(value = """
-			SELECT
-			    date_trunc('hour', viewed_at) AS bucket,
-			    COUNT(DISTINCT visitor_hash)::bigint AS uniqueVisitors,
-			    COUNT(*)::bigint AS pageviews
-			FROM pageviews
-			WHERE site_id = :siteId
-			  AND viewed_at BETWEEN :fromTs AND :toTs
-			GROUP BY date_trunc('hour', viewed_at)
-			ORDER BY date_trunc('hour', viewed_at)
-			""", nativeQuery = true)
+				SELECT
+				    date_trunc('hour', viewed_at) AS bucket,
+				    COUNT(DISTINCT visitor_hash)::bigint AS uniqueVisitors,
+				    COUNT(*)::bigint AS pageviews
+				FROM pageviews
+				WHERE site_id = :siteId
+				  AND viewed_at >= :fromInclusive
+				  AND viewed_at < :toExclusive
+				GROUP BY date_trunc('hour', viewed_at)
+				ORDER BY date_trunc('hour', viewed_at)
+				""", nativeQuery = true)
 	List<VisitorTimeseriesProjection> findHourlyBuckets(@Param("siteId") Long siteId,
-			@Param("fromTs") OffsetDateTime fromTs,
-			@Param("toTs") OffsetDateTime toTs);
+			@Param("fromInclusive") OffsetDateTime fromInclusive,
+			@Param("toExclusive") OffsetDateTime toExclusive);
 	
 	@Query(value = """
-			SELECT
-			    date_trunc('minute', viewed_at) AS bucket,
-			    COUNT(DISTINCT visitor_hash)::bigint AS uniqueVisitors,
-			    COUNT(*)::bigint AS pageviews
-			FROM pageviews
-			WHERE site_id = :siteId
-			  AND viewed_at BETWEEN :fromTs AND :toTs
-			GROUP BY date_trunc('minute', viewed_at)
-			ORDER BY date_trunc('minute', viewed_at)
-			""", nativeQuery = true)
+				SELECT
+				    date_trunc('minute', viewed_at) AS bucket,
+				    COUNT(DISTINCT visitor_hash)::bigint AS uniqueVisitors,
+				    COUNT(*)::bigint AS pageviews
+				FROM pageviews
+				WHERE site_id = :siteId
+				  AND viewed_at >= :fromInclusive
+				  AND viewed_at < :toExclusive
+				GROUP BY date_trunc('minute', viewed_at)
+				ORDER BY date_trunc('minute', viewed_at)
+				""", nativeQuery = true)
 	List<VisitorTimeseriesProjection> findMinuteBuckets(@Param("siteId") Long siteId,
-			@Param("fromTs") OffsetDateTime fromTs,
-			@Param("toTs") OffsetDateTime toTs);
+			@Param("fromInclusive") OffsetDateTime fromInclusive,
+			@Param("toExclusive") OffsetDateTime toExclusive);
 	
 	@Modifying
 	@Query(value = "DELETE FROM pageviews WHERE viewed_at < :cutoff", nativeQuery = true)

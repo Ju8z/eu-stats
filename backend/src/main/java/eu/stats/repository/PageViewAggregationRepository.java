@@ -167,35 +167,39 @@ public class PageViewAggregationRepository {
 		return count == null ? 0L : count;
 	}
 	
-	public int upsertDailyStats(OffsetDateTime viewedSince) {
-		return namedParameterJdbcTemplate.update(DAILY_STATS_SQL, parameters(viewedSince));
-	}
-	
-	public int upsertHourlyStats(OffsetDateTime viewedSince) {
-		return namedParameterJdbcTemplate.update(HOURLY_STATS_SQL, parameters(viewedSince));
-	}
-	
-	public int upsertPageStats(OffsetDateTime viewedSince) {
-		return namedParameterJdbcTemplate.update(PAGE_STATS_SQL, parameters(viewedSince));
-	}
-	
-	public int upsertReferrerStats(OffsetDateTime viewedSince) {
-		return namedParameterJdbcTemplate.update(REFERRER_STATS_SQL, parameters(viewedSince));
-	}
-	
-	public int upsertGeoStats(OffsetDateTime viewedSince) {
-		return namedParameterJdbcTemplate.update(GEO_STATS_SQL, parameters(viewedSince));
-	}
-	
-	public int upsertDeviceStats(OffsetDateTime viewedSince) {
-		return namedParameterJdbcTemplate.update(DEVICE_STATS_SQL, parameters(viewedSince));
-	}
-	
-	public int upsertEventStats(OffsetDateTime viewedSince) {
-		return namedParameterJdbcTemplate.update(EVENT_STATS_SQL, parameters(viewedSince));
-	}
-	
-	private MapSqlParameterSource parameters(OffsetDateTime viewedSince) {
-		return new MapSqlParameterSource("viewedSince", viewedSince);
-	}
+    public int upsertDailyStats(OffsetDateTime viewedSince) {
+        return update(DAILY_STATS_SQL, viewedSince);
+    }
+
+    public int upsertHourlyStats(OffsetDateTime viewedSince) {
+        return update(HOURLY_STATS_SQL, viewedSince);
+    }
+
+    public int upsertPageStats(OffsetDateTime viewedSince) {
+        return update(PAGE_STATS_SQL, viewedSince);
+    }
+
+    public int upsertReferrerStats(OffsetDateTime viewedSince) {
+        return update(REFERRER_STATS_SQL, viewedSince);
+    }
+
+    public int upsertGeoStats(OffsetDateTime viewedSince) {
+        return update(GEO_STATS_SQL, viewedSince);
+    }
+
+    public int upsertDeviceStats(OffsetDateTime viewedSince) {
+        return update(DEVICE_STATS_SQL, viewedSince);
+    }
+
+    public int upsertEventStats(OffsetDateTime viewedSince) {
+        return update(EVENT_STATS_SQL, viewedSince);
+    }
+
+    private MapSqlParameterSource parameters(OffsetDateTime viewedSince) {
+        return new MapSqlParameterSource("viewedSince", viewedSince);
+    }
+
+    private int update(String sql, OffsetDateTime viewedSince) {
+        return namedParameterJdbcTemplate.update(sql, parameters(viewedSince));
+    }
 }
