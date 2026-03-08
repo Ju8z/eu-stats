@@ -52,24 +52,9 @@ public class PageView {
 	
 	@Column(length = 20)
 	private String screenResolution;
-	
-	@Column(length = 20)
-	private String viewport;
-	
-	@Column(length = 10)
-	private String language;
-	
+
 	@Column(length = 2)
 	private String country;
-	
-	@Column(length = 100)
-	private String city;
-	
-	@Column(length = 2)
-	private String continent;
-	
-	@Column(length = 10)
-	private String subdivision;
 	
 	@Column(nullable = false, length = 50)
 	private String eventType;
@@ -87,8 +72,8 @@ public class PageView {
 	
 	public PageView(Long id, Long siteId, String visitorHash, String pageUrl, String pageTitle,
 			String referrer, String referrerCategory, String browser, String browserVersion, String os, String osVersion, String deviceType,
-			String screenResolution, String viewport, String language, String country, String city,
-			String continent, String subdivision, String eventType, String eventName, OffsetDateTime viewedAt,
+			String screenResolution, String country,
+			String eventType, String eventName, OffsetDateTime viewedAt,
 			OffsetDateTime createdAt) {
 		this.id = id;
 		this.siteId = siteId;
@@ -103,12 +88,7 @@ public class PageView {
 		this.osVersion = osVersion;
 		this.deviceType = deviceType;
 		this.screenResolution = screenResolution;
-		this.viewport = viewport;
-		this.language = language;
 		this.country = country;
-		this.city = city;
-		this.continent = continent;
-		this.subdivision = subdivision;
 		this.eventType = eventType;
 		this.eventName = eventName;
 		this.viewedAt = viewedAt;
@@ -219,52 +199,12 @@ public class PageView {
 		this.screenResolution = screenResolution;
 	}
 	
-	public String getViewport() {
-		return viewport;
-	}
-	
-	public void setViewport(String viewport) {
-		this.viewport = viewport;
-	}
-	
-	public String getLanguage() {
-		return language;
-	}
-	
-	public void setLanguage(String language) {
-		this.language = language;
-	}
-	
 	public String getCountry() {
 		return country;
 	}
 	
 	public void setCountry(String country) {
 		this.country = country;
-	}
-	
-	public String getCity() {
-		return city;
-	}
-	
-	public void setCity(String city) {
-		this.city = city;
-	}
-	
-	public String getContinent() {
-		return continent;
-	}
-	
-	public void setContinent(String continent) {
-		this.continent = continent;
-	}
-	
-	public String getSubdivision() {
-		return subdivision;
-	}
-	
-	public void setSubdivision(String subdivision) {
-		this.subdivision = subdivision;
 	}
 	
 	public String getEventType() {

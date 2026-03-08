@@ -1,6 +1,7 @@
 package eu.stats.service;
 
 import java.net.URI;
+import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 
@@ -27,38 +28,53 @@ public class CollectionService {
 	private final GeoIpService geoIpService;
 	private final UserAgentService userAgentService;
 	private final ReferrerClassifier referrerClassifier;
+	private final Clock clock;
 	
-	public CollectionService(SiteRepository siteRepository, PageViewRepository pageViewRepository,
-			VisitorHashService visitorHashService, GeoIpService geoIpService, UserAgentService userAgentService,
-			ReferrerClassifier referrerClassifier) {
+	public CollectionService(
+			SiteRepository siteRepository,
+			PageViewRepository pageViewRepository,
+			VisitorHashService visitorHashService,
+			GeoIpService geoIpService,
+			UserAgentService userAgentService,
+			ReferrerClassifier referrerClassifier,
+			Clock clock) {
 		this.siteRepository = siteRepository;
 		this.pageViewRepository = pageViewRepository;
 		this.visitorHashService = visitorHashService;
 		this.geoIpService = geoIpService;
 		this.userAgentService = userAgentService;
 		this.referrerClassifier = referrerClassifier;
+		this.clock = clock;
 	}
 	
 	@Transactional
 	public void collect(CollectPayload payload, HttpServletRequest request) {
-		if (!siteRepository.existsById(payload.siteId())) {
-			log.warn("Dropping collect payload for unknown siteId={}", payload.siteId());
+		if (payload == null || !siteRepository.existsById(payload.siteId())) {
+			log.warn("Dropping collect payload for unknown siteId={}", payload == null ? null : payload.siteId());
 			return;
 		}
 		
 		String clientIp = request.getRemoteAddr();
+		PageView pageView = buildPageView(payload, clientIp);
+		pageViewRepository.save(pageView);
 		
+		log.debug("Stored pageview: siteId={}, eventType={}, viewedAt={}",
+				payload.siteId(), payload.eventType(), pageView.getViewedAt());
+	}
+	
+	private PageView buildPageView(CollectPayload payload, String clientIp) {
 		String visitorHash = visitorHashService.hashVisitor(payload.siteId(), clientIp, payload.userAgent());
 		GeoIpService.GeoIpResult geoIpResult = geoIpService.resolve(clientIp);
 		UserAgentService.UserAgentDetails userAgentDetails = userAgentService.parse(payload.userAgent());
+		String normalizedReferrer = referrerClassifier.normalizeDomain(payload.referrer());
 		
-		PageView pageView = new PageView(
+		return new PageView(
 				null,
 				payload.siteId(),
 				visitorHash,
 				sanitizePath(payload.url()),
 				payload.title(),
-				referrerClassifier.normalizeDomain(payload.referrer()),
+				normalizedReferrer,
 				referrerClassifier.classify(payload.referrer()),
 				userAgentDetails.browser(),
 				userAgentDetails.browserVersion(),
@@ -66,28 +82,18 @@ public class CollectionService {
 				userAgentDetails.osVersion(),
 				userAgentDetails.deviceType(),
 				payload.screenResolution(),
-				payload.viewport(),
-				payload.language(),
 				geoIpResult.country(),
-				null,
-				null,
-				null,
 				payload.eventType(),
 				payload.eventName(),
-				parseTimestamp(payload.timestamp()),
-				OffsetDateTime.now()
-		);
-		
-		pageViewRepository.save(pageView);
-		log.debug("Stored pageview: siteId={}, eventType={}, viewedAt={}",
-				payload.siteId(), payload.eventType(), pageView.getViewedAt());
+				parseViewedAt(payload.timestamp()),
+				OffsetDateTime.now(clock));
 	}
 	
-	private OffsetDateTime parseTimestamp(String timestamp) {
+	private OffsetDateTime parseViewedAt(String timestamp) {
 		try {
 			return OffsetDateTime.parse(timestamp);
 		} catch (DateTimeParseException ex) {
-			return OffsetDateTime.now();
+			return OffsetDateTime.now(clock);
 		}
 	}
 	
@@ -99,7 +105,6 @@ public class CollectionService {
 		try {
 			URI uri = URI.create(url);
 			String path = uri.getPath();
-			
 			return path == null || path.isBlank() ? "/" : path;
 		} catch (Exception ex) {
 			return "/";

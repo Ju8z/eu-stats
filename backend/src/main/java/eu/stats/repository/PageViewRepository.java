@@ -16,7 +16,6 @@ import eu.stats.repository.projection.LivePageProjection;
 import eu.stats.repository.projection.OverviewAggregateProjection;
 import eu.stats.repository.projection.VisitorTimeseriesProjection;
 
-//TODO: Queries are optimized do not touch them, they are all tested and working.
 public interface PageViewRepository extends JpaRepository<PageView, Long> {
 	
 	@Query(value = """
@@ -89,7 +88,6 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 	Long countDistinctVisitorsByIngestedSince(@Param("siteId") Long siteId,
 			@Param("fromTs") OffsetDateTime fromTs);
 	
-	//TODO: Probably is not needed, its just a small project..
 	@Query(value = """
 			WITH last_seen AS (
 			  SELECT DISTINCT ON (visitor_hash)

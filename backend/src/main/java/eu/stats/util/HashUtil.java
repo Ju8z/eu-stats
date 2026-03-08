@@ -6,7 +6,6 @@ import java.security.NoSuchAlgorithmException;
 
 import org.springframework.stereotype.Component;
 
-//TODO: Possible its just over complicated, but due GDPR everything should be hashed...
 @Component
 public class HashUtil {
 	

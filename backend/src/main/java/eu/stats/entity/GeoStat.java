@@ -26,9 +26,6 @@ public class GeoStat {
 	@Column(nullable = false, length = 2)
 	private String country;
 	
-	@Column(length = 100)
-	private String city;
-	
 	@Column(nullable = false)
 	private Integer visits;
 	
@@ -65,14 +62,6 @@ public class GeoStat {
 	
 	public void setCountry(String country) {
 		this.country = country;
-	}
-	
-	public String getCity() {
-		return city;
-	}
-	
-	public void setCity(String city) {
-		this.city = city;
 	}
 	
 	public Integer getVisits() {

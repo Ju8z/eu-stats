@@ -1,5 +1,6 @@
 package eu.stats.service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
@@ -13,16 +14,16 @@ public class VisitorHashService {
 	
 	private final HashUtil hashUtil;
 	private final AppProperties appProperties;
+	private final Clock clock;
 	
-	public VisitorHashService(HashUtil hashUtil, AppProperties appProperties) {
+	public VisitorHashService(HashUtil hashUtil, AppProperties appProperties, Clock clock) {
 		this.hashUtil = hashUtil;
 		this.appProperties = appProperties;
+		this.clock = clock;
 	}
 	
 	public String hashVisitor(Long siteId, String clientIp, String userAgent) {
-		String dailySalt = hashUtil.sha256Hex(appProperties.getDailySaltSecret() + ":" + LocalDate.now(ZoneOffset.UTC));
-		
-		// The daily salt breaks linkability across days while preserving same-day unique counting
+		String dailySalt = hashUtil.sha256Hex(appProperties.getDailySaltSecret() + ":" + LocalDate.now(clock.withZone(ZoneOffset.UTC)));
 		String source = siteId + "|" + clientIp + "|" + userAgent + "|" + dailySalt;
 		
 		return hashUtil.sha256Hex(source);

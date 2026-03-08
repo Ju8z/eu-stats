@@ -1,6 +1,5 @@
 package eu.stats.dto.response;
 
-//TODO: Probably comparison is not needed, recheck when graphc bucket is rdy to be implemented
 public record OverviewStatsResponse(
 		
 		Period period,

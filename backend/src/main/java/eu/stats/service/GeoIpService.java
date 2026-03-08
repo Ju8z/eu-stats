@@ -1,5 +1,6 @@
 package eu.stats.service;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -19,18 +20,19 @@ public class GeoIpService {
 	private final RestClient restClient;
 	private final AppProperties appProperties;
 	private final HashUtil hashUtil;
+	private final Clock clock;
 	private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
 	
-	public GeoIpService(RestClient restClient, AppProperties appProperties, HashUtil hashUtil) {
+	public GeoIpService(RestClient restClient, AppProperties appProperties, HashUtil hashUtil, Clock clock) {
 		this.restClient = restClient;
 		this.appProperties = appProperties;
 		this.hashUtil = hashUtil;
+		this.clock = clock;
 	}
 	
 	public GeoIpResult resolve(String ip) {
 		String hashedIp = hashUtil.sha256Hex(ip);
-		Instant now = Instant.now();
-		//TODO: Probabyl not needed, since it will be working only locally
+		Instant now = Instant.now(clock);
 		CacheEntry cached = cache.get(hashedIp);
 		if (cached != null && cached.expiresAt().isAfter(now)) {
 			return cached.value();
