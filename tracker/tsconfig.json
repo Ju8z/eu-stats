@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "ES2017",
+      "DOM"
+    ],
+    "module": "None",
+    "strict": true,
+    "noEmitOnError": true,
+    "outDir": "../backend/src/main/resources/static",
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": [
+    "tracker.ts"
+  ]
+}
