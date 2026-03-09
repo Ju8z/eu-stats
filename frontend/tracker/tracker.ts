@@ -10,8 +10,6 @@
         title: string;
         referrer: string;
         screenResolution: string;
-        viewport: string;
-        language: string;
         userAgent: string;
         eventType: TrackerEventType;
         eventName: string | null;
@@ -72,8 +70,6 @@
         function buildPayload(eventType: TrackerEventType, eventName: string | null): CollectPayload {
             const screenWidth = trackerWindow.screen.width || 0;
             const screenHeight = trackerWindow.screen.height || 0;
-            const viewportWidth = trackerWindow.innerWidth || 0;
-            const viewportHeight = trackerWindow.innerHeight || 0;
 
             return {
                 siteId,
@@ -81,8 +77,6 @@
                 title: trackerDocument.title || '',
                 referrer: resolveReferrerDomain(),
                 screenResolution: screenWidth + 'x' + screenHeight,
-                viewport: viewportWidth + 'x' + viewportHeight,
-                language: navigator.language || '',
                 userAgent: navigator.userAgent || '',
                 eventType,
                 eventName,

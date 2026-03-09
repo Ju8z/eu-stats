@@ -22,12 +22,6 @@ public record CollectPayload(
 		@Size(max = 20)
 		String screenResolution,
 		
-		@Size(max = 20)
-		String viewport,
-		
-		@Size(max = 10)
-		String language,
-		
 		@NotBlank
 		@Size(max = 1024)
 		String userAgent,
