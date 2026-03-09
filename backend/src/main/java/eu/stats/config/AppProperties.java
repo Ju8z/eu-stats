@@ -9,10 +9,11 @@ public class AppProperties {
 	
 	private String trackerBaseUrl;
 	private String dailySaltSecret;
-	private int dataRetentionMonths;
-	private int realtimeWindowMinutes;
-	private List<String> corsOrigins;
 	private String geoIpApiUrl;
+	private List<String> corsOrigins;
+	private int dataRetentionMonths;
+	private int aggregationLookbackDays;
+	private int realtimeWindowMinutes;
 	
 	public String getTrackerBaseUrl() {
 		return trackerBaseUrl;
@@ -36,6 +37,14 @@ public class AppProperties {
 	
 	public void setDataRetentionMonths(int dataRetentionMonths) {
 		this.dataRetentionMonths = dataRetentionMonths;
+	}
+	
+	public int getAggregationLookbackDays() {
+		return aggregationLookbackDays;
+	}
+	
+	public void setAggregationLookbackDays(int aggregationLookbackDays) {
+		this.aggregationLookbackDays = aggregationLookbackDays;
 	}
 	
 	public int getRealtimeWindowMinutes() {
