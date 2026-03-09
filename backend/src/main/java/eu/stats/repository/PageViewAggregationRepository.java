@@ -20,6 +20,7 @@ public class PageViewAggregationRepository {
 			    COUNT(DISTINCT pv.visitor_hash) AS unique_visitors
 			FROM pageviews pv
 			WHERE pv.viewed_at >= :viewedSince
+			  AND pv.event_type = 'pageview'
 			GROUP BY pv.site_id, DATE(pv.viewed_at)
 			ON CONFLICT (site_id, stat_date)
 			DO UPDATE SET
@@ -36,6 +37,7 @@ public class PageViewAggregationRepository {
 			    COUNT(DISTINCT pv.visitor_hash) AS unique_visitors
 			FROM pageviews pv
 			WHERE pv.viewed_at >= :viewedSince
+			  AND pv.event_type = 'pageview'
 			GROUP BY pv.site_id, date_trunc('hour', pv.viewed_at)
 			ON CONFLICT (site_id, stat_hour)
 			DO UPDATE SET
@@ -54,6 +56,7 @@ public class PageViewAggregationRepository {
 			    COUNT(DISTINCT pv.visitor_hash)
 			FROM pageviews pv
 			WHERE pv.viewed_at >= :viewedSince
+			  AND pv.event_type = 'pageview'
 			GROUP BY pv.site_id, DATE(pv.viewed_at), pv.page_url
 			ON CONFLICT (site_id, stat_date, page_url)
 			DO UPDATE SET
@@ -73,6 +76,7 @@ public class PageViewAggregationRepository {
 			    COUNT(DISTINCT pv.visitor_hash)
 			FROM pageviews pv
 			WHERE pv.viewed_at >= :viewedSince
+			  AND pv.event_type = 'pageview'
 			GROUP BY pv.site_id, DATE(pv.viewed_at), COALESCE(NULLIF(pv.referrer, ''), '(direct)'), COALESCE(NULLIF(pv.referrer_category, ''), 'direct')
 			ON CONFLICT (site_id, stat_date, referrer)
 			DO UPDATE SET
@@ -91,6 +95,7 @@ public class PageViewAggregationRepository {
 			    COUNT(DISTINCT pv.visitor_hash)
 			FROM pageviews pv
 			WHERE pv.viewed_at >= :viewedSince
+			  AND pv.event_type = 'pageview'
 			GROUP BY pv.site_id, DATE(pv.viewed_at), COALESCE(NULLIF(pv.country, ''), 'ZZ')
 			ON CONFLICT (site_id, stat_date, country)
 			DO UPDATE SET
@@ -116,6 +121,7 @@ public class PageViewAggregationRepository {
 			    COUNT(DISTINCT pv.visitor_hash)
 			FROM pageviews pv
 			WHERE pv.viewed_at >= :viewedSince
+			  AND pv.event_type = 'pageview'
 			GROUP BY
 			    pv.site_id,
 			    DATE(pv.viewed_at),
@@ -143,7 +149,7 @@ public class PageViewAggregationRepository {
 			    COUNT(DISTINCT pv.visitor_hash)
 			FROM pageviews pv
 			WHERE pv.viewed_at >= :viewedSince
-			  AND pv.event_type <> 'pageview'
+			  AND pv.event_type = 'event'
 			  AND pv.event_name IS NOT NULL
 			GROUP BY pv.site_id, DATE(pv.viewed_at), pv.event_name
 			ON CONFLICT (site_id, stat_date, event_name)

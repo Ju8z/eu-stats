@@ -24,6 +24,7 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 			    COUNT(DISTINCT visitor_hash)::bigint AS uniqueVisitors
 			FROM pageviews
 			WHERE site_id = :siteId
+			  AND event_type = 'pageview'
 			  AND DATE(viewed_at) BETWEEN :fromDate AND :toDate
 			""", nativeQuery = true)
 	OverviewAggregateProjection summarizeRange(@Param("siteId") Long siteId,
@@ -37,6 +38,7 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 			    COUNT(*)::bigint AS pageviews
 			FROM pageviews
 			WHERE site_id = :siteId
+			  AND event_type = 'pageview'
 			  AND DATE(viewed_at) BETWEEN :fromDate AND :toDate
 			GROUP BY date_trunc('day', viewed_at)
 			ORDER BY date_trunc('day', viewed_at)
@@ -52,6 +54,7 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 				    COUNT(*)::bigint AS pageviews
 				FROM pageviews
 				WHERE site_id = :siteId
+			  AND event_type = 'pageview'
 				  AND viewed_at >= :fromInclusive
 				  AND viewed_at < :toExclusive
 				GROUP BY date_trunc('hour', viewed_at)
@@ -68,6 +71,7 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 				    COUNT(*)::bigint AS pageviews
 				FROM pageviews
 				WHERE site_id = :siteId
+			  AND event_type = 'pageview'
 				  AND viewed_at >= :fromInclusive
 				  AND viewed_at < :toExclusive
 				GROUP BY date_trunc('minute', viewed_at)
