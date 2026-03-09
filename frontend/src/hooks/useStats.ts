@@ -143,7 +143,7 @@ export function useStats(siteId: number, period = '30d') {
 
         const statsInterval = globalThis.window.setInterval(() => {
             void refreshAll(false);
-        }, 10000);
+        }, 3000);
 
         const realtimeInterval = globalThis.window.setInterval(() => {
             void refreshRealtime();

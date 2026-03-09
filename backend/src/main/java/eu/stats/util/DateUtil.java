@@ -20,23 +20,24 @@ public class DateUtil {
         if (period == null || period.isBlank()) {
             period = "30d";
         }
-
-        return switch (period) {
-            case "today" -> new DateRange(today, today);
-            case "yesterday" -> {
+		
+		switch (period) {
+			case "today":
+				return new DateRange(today, today);
+			case "yesterday":
                 LocalDate yesterday = today.minusDays(1);
-                yield new DateRange(yesterday, yesterday);
-            }
-            case "7d" -> new DateRange(today.minusDays(6), today);
-            case "30d" -> new DateRange(today.minusDays(29), today);
-            default -> {
+				return new DateRange(yesterday, yesterday);
+			case "7d":
+				return new DateRange(today.minusDays(6), today);
+			case "30d":
+				return new DateRange(today.minusDays(29), today);
+			default:
                 if (from != null && to != null) {
-                    yield new DateRange(from, to);
+					return new DateRange(from, to);
                 }
 
                 throw new IllegalArgumentException("Unsupported period: " + period);
-            }
-        };
+		}
     }
 
     public DateRange previous(DateRange current) {

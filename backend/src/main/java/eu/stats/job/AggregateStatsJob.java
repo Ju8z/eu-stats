@@ -16,7 +16,7 @@ import eu.stats.repository.PageViewAggregationRepository;
 public class AggregateStatsJob {
 	
 	private static final Logger log = LoggerFactory.getLogger(AggregateStatsJob.class);
-	private static final long FIXED_RATE_MILLIS = 60_000L;
+	private static final long FIXED_RATE_MILLIS = 3_000L;
 	
 	private final PageViewAggregationRepository pageViewAggregationRepository;
 	private final AppProperties appProperties;

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "none",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmitOnError": true,
+    "outFile": "../../backend/src/main/resources/static/tracker.js"
+  },
+  "files": [
+    "tracker.ts"
+  ]
+}
