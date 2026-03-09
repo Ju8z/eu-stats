@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { DevicePieChart } from '../components/charts/DevicePieChart';
 import { GeoBarChart } from '../components/charts/GeoBarChart';
+import { OperatingSystemPieChart } from '../components/charts/OperatingSystemPieChart';
 import { RealTimeWidget } from '../components/charts/RealTimeWidget';
 import { VisitorChart } from '../components/charts/VisitorChart';
 import { DateRangePicker } from '../components/stats/DateRangePicker';
@@ -55,9 +56,10 @@ export default function SiteAnalyticsPage() {
             { stats.visitors && <VisitorChart series={ stats.visitors }/> }
 
             { (stats.geo || stats.devices) && (
-                <section className="grid gap-2 xl:grid-cols-2">
+                <section className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                     { stats.geo && <GeoBarChart data={ stats.geo }/> }
                     { stats.devices && <DevicePieChart data={ stats.devices }/> }
+                    { stats.devices && <OperatingSystemPieChart data={ stats.devices }/> }
                 </section>
             ) }
 
