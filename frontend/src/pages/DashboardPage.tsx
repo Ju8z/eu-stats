@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { EmptyState } from '../components/common/EmptyState';
-import { SiteCard } from '../components/sites/SiteCard';
-import { useSites } from '../hooks/useSites';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { EmptyState } from '@/components/common/EmptyState';
+import { SiteCard } from '@/components/sites/SiteCard';
+import { useSites } from '@/hooks/useSites';
 
 export default function DashboardPage() {
     const { sites, isLoading, error, refresh } = useSites();

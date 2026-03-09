@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { statsApi } from '../api/statsApi';
-import type { DeviceStats, EventStats, GeoStats, OverviewStats, PageStats, RealTimeStats, ReferrerStats, VisitorSeries } from '../types/stats';
+import { statsApi } from '@/api/statsApi';
+import type { DeviceStats, EventStats, GeoStats, OverviewStats, PageStats, RealTimeStats, ReferrerStats, VisitorSeries } from '@/types/stats';
 
 interface SiteStatsBundle {
     overview: OverviewStats | null;

@@ -6,7 +6,7 @@
     "dev:backend": "npm run backend",
     "frontend": "cd frontend && npm run dev",
     "dev:frontend": "npm run frontend",
-    "build:tracker": "cd frontend && npm exec -- tsc -p tracker/tsconfig.json",
+    "build:tracker": "cd frontend && npm exec -- tsc -p tsconfig.tracker.json",
     "build": "npm run build:tracker && npm run build:frontend && npm run build:backend",
     "build:frontend": "cd frontend && npm run build",
     "build:backend": "cd backend && mvn -B clean package -DskipTests",

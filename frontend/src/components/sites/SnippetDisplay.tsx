@@ -1,5 +1,5 @@
 import React from 'react';
-import { CopyButton } from '../common/CopyButton';
+import { CopyButton } from '@/components/common/CopyButton';
 
 export class SnippetDisplay extends React.Component<{ snippetHtml: string }> {
 

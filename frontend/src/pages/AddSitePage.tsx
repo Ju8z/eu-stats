@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { sitesApi } from '../api/sitesApi';
-import { SnippetDisplay } from '../components/sites/SnippetDisplay';
+import { sitesApi } from '@/api/sitesApi';
+import { SnippetDisplay } from '@/components/sites/SnippetDisplay';
 
 export default function AddSitePage() {
     const [name, setName] = useState('');

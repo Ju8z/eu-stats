@@ -1,5 +1,5 @@
-import apiClient from './client';
-import type { CreateSiteRequest, Site, SiteListResponse, SnippetResponse, UpdateSiteRequest } from '../types/site';
+import apiClient from '@/api/client';
+import type { CreateSiteRequest, Site, SiteListResponse, SnippetResponse, UpdateSiteRequest } from '@/types/site';
 
 export const sitesApi = {
 

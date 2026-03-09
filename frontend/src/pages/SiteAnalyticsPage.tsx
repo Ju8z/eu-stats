@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { DevicePieChart } from '../components/charts/DevicePieChart';
-import { GeoBarChart } from '../components/charts/GeoBarChart';
-import { OperatingSystemPieChart } from '../components/charts/OperatingSystemPieChart';
-import { RealTimeWidget } from '../components/charts/RealTimeWidget';
-import { VisitorChart } from '../components/charts/VisitorChart';
-import { DateRangePicker } from '../components/stats/DateRangePicker';
-import { MetricCard } from '../components/stats/MetricCard';
-import { StatsTable } from '../components/stats/StatsTable';
-import { useStats } from '../hooks/useStats';
-import { formatNumber } from '../utils/formatters';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { DevicePieChart } from '@/components/charts/DevicePieChart';
+import { GeoBarChart } from '@/components/charts/GeoBarChart';
+import { OperatingSystemPieChart } from '@/components/charts/OperatingSystemPieChart';
+import { RealTimeWidget } from '@/components/charts/RealTimeWidget';
+import { VisitorChart } from '@/components/charts/VisitorChart';
+import { DateRangePicker } from '@/components/stats/DateRangePicker';
+import { MetricCard } from '@/components/stats/MetricCard';
+import { StatsTable } from '@/components/stats/StatsTable';
+import { useStats } from '@/hooks/useStats';
+import { formatNumber } from '@/utils/formatters';
 
 export default function SiteAnalyticsPage() {
     const { siteId } = useParams();

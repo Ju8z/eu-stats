@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import type { Site } from '../../types/site';
-import { formatNumber } from '../../utils/formatters';
+import type { Site } from '@/types/site';
+import { formatNumber } from '@/utils/formatters';
 
 export class SiteCard extends React.Component<{ site: Site }> {
 

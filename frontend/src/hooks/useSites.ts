@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { sitesApi } from '../api/sitesApi';
-import type { Site } from '../types/site';
+import { sitesApi } from '@/api/sitesApi';
+import type { Site } from '@/types/site';
 
 export function useSites() {
     const [sites, setSites] = useState<Site[]>([]);

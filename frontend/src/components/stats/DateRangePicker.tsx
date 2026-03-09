@@ -1,5 +1,5 @@
 import React from 'react';
-import { PERIOD_OPTIONS } from '../../utils/constants';
+import { PERIOD_OPTIONS } from '@/utils/constants';
 
 export class DateRangePicker extends React.Component<{ value: string; onChange: (value: string) => void }> {
 

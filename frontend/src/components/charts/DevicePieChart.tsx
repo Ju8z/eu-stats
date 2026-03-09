@@ -1,6 +1,6 @@
 import React from 'react';
-import type { DeviceStats } from '../../types/stats';
-import { PieChart, type PieChartItem } from './PieChart';
+import type { DeviceStats } from '@/types/stats';
+import { PieChart, type PieChartItem } from '@/components/charts/PieChart';
 
 function toDevicePieItems(data: DeviceStats): PieChartItem[] {
     return data.deviceTypes.map((row) => ({

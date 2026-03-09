@@ -1,7 +1,7 @@
 import React from 'react';
 import { CategoryScale, Chart as ChartJS, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import type { VisitorSeries } from '../../types/stats';
+import type { VisitorSeries } from '@/types/stats';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
@@ -23,6 +23,7 @@ function formatLabel(value: string, interval: string): string {
             return match[1];
         }
     }
+
     return value;
 }
 

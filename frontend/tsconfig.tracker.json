@@ -10,9 +10,9 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmitOnError": true,
-    "outFile": "../../backend/src/main/resources/static/tracker.js"
+    "outFile": "../backend/src/main/resources/static/tracker.js"
   },
   "files": [
-    "tracker.ts"
+    "tracker/tracker.ts"
   ]
 }

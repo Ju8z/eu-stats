@@ -1,5 +1,5 @@
-import apiClient from './client';
-import type { DeviceStats, EventStats, GeoStats, OverviewStats, PageStats, RealTimeStats, ReferrerStats, VisitorSeries } from '../types/stats';
+import apiClient from '@/api/client';
+import type { DeviceStats, EventStats, GeoStats, OverviewStats, PageStats, RealTimeStats, ReferrerStats, VisitorSeries } from '@/types/stats';
 
 const base = (siteId: number) => `/sites/${ siteId }/d`;
 

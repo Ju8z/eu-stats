@@ -1,5 +1,5 @@
 import React from 'react';
-import type { RealTimeStats } from '../../types/stats';
+import type { RealTimeStats } from '@/types/stats';
 
 export class RealTimeWidget extends React.PureComponent<{ data: RealTimeStats | null }> {
 
