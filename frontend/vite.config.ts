@@ -31,7 +31,7 @@ function resolveBackendTarget(env: Record<string, string | undefined>): string {
     return normalizeBackendTarget(env.VITE_BACKEND_TARGET)
         ?? normalizeBackendTarget(env.VITE_API_BASE_URL)
         ?? normalizeBackendTarget(env.APP_TRACKER_BASE_URL)
-        ?? 'http://localhost:8080';
+        ?? 'http://178.104.43.233:8080';
 }
 
 export default defineConfig(({ mode }) => {
