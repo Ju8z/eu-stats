@@ -24,6 +24,8 @@ const emptyBundle: SiteStatsBundle = {
     realtime: null
 };
 
+const REFRESH_INTERVAL_MILLIS = 3000;
+
 function hasSameData<T>(current: T, incoming: T): boolean {
     if (current === incoming) {
         return true;
@@ -143,11 +145,11 @@ export function useStats(siteId: number, period = '30d') {
 
         const statsInterval = globalThis.window.setInterval(() => {
             void refreshAll(false);
-        }, 3000);
+        }, REFRESH_INTERVAL_MILLIS);
 
         const realtimeInterval = globalThis.window.setInterval(() => {
             void refreshRealtime();
-        }, 3000);
+        }, REFRESH_INTERVAL_MILLIS);
 
         return () => {
             globalThis.window.clearInterval(statsInterval);

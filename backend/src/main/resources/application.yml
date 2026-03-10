@@ -35,7 +35,7 @@ app:
   daily-salt-secret: ${APP_DAILY_SALT_SECRET:alfatrainingssalz}
   data-retention-months: ${APP_DATA_RETENTION_MONTHS:24}
   aggregation-lookback-days: ${APP_AGGREGATION_LOOKBACK_DAYS:2}
-  realtime-window-minutes: ${APP_REALTIME_WINDOW_MINUTES:30}
+  realtime-window-minutes: ${APP_REALTIME_WINDOW_MINUTES:5}
   cors-origins: ${APP_CORS_ORIGINS:http://localhost:5173}
   geo-ip-api-url: ${GEOIP_API_URL:https://api.country.is}
 

@@ -2,7 +2,12 @@
     // Self-executing wrapper (IIFE):
     // The function is created and immediately invoked by the trailing `();`.
     // This means tracking bootstraps as soon as the script file is loaded by the browser.
-    type TrackerEventType = 'pageview' | 'event';
+    type TrackerEventType = 'pageview' | 'event' | 'heartbeat';
+    // A visible tab sends heartbeats on this cadence so the backend can infer
+    // "currently active" without a dedicated presence table.
+    const HEARTBEAT_EVENT_TYPE: TrackerEventType = 'heartbeat';
+    const HEARTBEAT_INTERVAL_MILLIS = 5000;
+    const TAB_ID_STORAGE_KEY = 'eu_stats_tab_id';
 
     interface CollectPayload {
         siteId: number;
@@ -20,9 +25,20 @@
         doNotTrack?: string;
     }
 
+    interface HeartbeatState {
+        intervalId: number | null;
+    }
+
+    interface PageviewState {
+        lastTrackedPath: string | null;
+    }
+
     try {
         const trackerWindow = globalThis.window as TrackerWindow;
         const trackerDocument = trackerWindow.document;
+        const heartbeatState: HeartbeatState = {
+            intervalId: null
+        };
 
         // Respect Do Not Track and stop before any data collection starts.
         if (navigator.doNotTrack === '1' || trackerWindow.doNotTrack === '1') {
@@ -43,6 +59,9 @@
         }
 
         const collectorEndpoint = trackerScriptUrl.origin + '/api/c';
+        // sessionStorage is scoped per tab, which gives us a stable tab-level
+        // identifier without introducing a new backend column.
+        const currentTabId = getOrCreateTabId();
 
         // Normalize the current page URL down to a pathname for privacy and consistency.
         function resolvePath(url: string): string {
@@ -63,6 +82,34 @@
                 return new URL(trackerDocument.referrer).hostname.replace(/^www\./, '');
             } catch {
                 return '';
+            }
+        }
+
+        // Generates a per-tab identifier. randomUUID is preferred, but the
+        // fallback keeps the tracker working in older environments.
+        function generateTabId(): string {
+            if (trackerWindow.crypto?.randomUUID) {
+                return trackerWindow.crypto.randomUUID();
+            }
+
+            return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+        }
+
+        // Reuses the same tab id across reloads in the current tab so repeated
+        // heartbeats can be deduplicated server-side. Other tabs get their own
+        // sessionStorage instance and therefore their own id.
+        function getOrCreateTabId(): string {
+            try {
+                const storedTabId = trackerWindow.sessionStorage.getItem(TAB_ID_STORAGE_KEY);
+                if (storedTabId) {
+                    return storedTabId;
+                }
+
+                const generatedTabId = generateTabId();
+                trackerWindow.sessionStorage.setItem(TAB_ID_STORAGE_KEY, generatedTabId);
+                return generatedTabId;
+            } catch {
+                return generateTabId();
             }
         }
 
@@ -112,22 +159,58 @@
             postPayload(buildPayload(eventType, eventName));
         }
 
+        // Heartbeats keep the current page "alive" while the tab remains
+        // visible. We send the tab id via eventName so the backend can count
+        // tabs without any schema change.
+        function sendHeartbeat(): void {
+            postPayload(buildPayload(HEARTBEAT_EVENT_TYPE, currentTabId));
+        }
+
+        // Visibility changes and page unloads both funnel through here so we do
+        // not keep sending presence signals after the tab stops being active.
+        function stopHeartbeat(): void {
+            if (heartbeatState.intervalId == null) {
+                return;
+            }
+
+            trackerWindow.clearInterval(heartbeatState.intervalId);
+            heartbeatState.intervalId = null;
+        }
+
+        // Starts presence reporting only while the document is visible and
+        // avoids stacking multiple intervals for the same tab.
+        function startHeartbeat(): void {
+            if (trackerDocument.visibilityState === 'hidden') {
+                stopHeartbeat();
+                return;
+            }
+            if (heartbeatState.intervalId != null) {
+                return;
+            }
+
+            sendHeartbeat();
+            heartbeatState.intervalId = trackerWindow.setInterval(() => {
+                sendHeartbeat();
+            }, HEARTBEAT_INTERVAL_MILLIS);
+        }
+
         // Track a standard pageview event, but only when the path actually changes.
         // Guards against browsers and frameworks calling replaceState on load,
         // which would otherwise fire a duplicate pageview immediately after the initial one.
         function createTrackPageview(): () => void {
-            const trackerState = {
-                lastTrackedPath: null as string | null
+            const pageviewState: PageviewState = {
+                lastTrackedPath: null
             };
 
             return function trackPageview(): void {
                 const currentPath = resolvePath(trackerWindow.location.href);
-                if (currentPath === trackerState.lastTrackedPath) {
+                if (currentPath === pageviewState.lastTrackedPath) {
                     return;
                 }
 
-                trackerState.lastTrackedPath = currentPath;
+                pageviewState.lastTrackedPath = currentPath;
                 sendEvent('pageview', null);
+                startHeartbeat();
             };
         }
 
@@ -178,6 +261,8 @@
         instrumentHistoryNavigation();
         trackerWindow.addEventListener('popstate', trackPageview, { passive: true });
         trackerWindow.addEventListener('click', trackLinkClick, { capture: true, passive: true });
+        trackerDocument.addEventListener('visibilitychange', startHeartbeat, { passive: true });
+        trackerWindow.addEventListener('pagehide', stopHeartbeat, { passive: true });
         trackPageview();
     } catch {
         // Never break the host page because of analytics.

@@ -65,5 +65,6 @@ export interface EventStats {
 
 export interface RealTimeStats {
     activeVisitors: number;
+    windowMinutes: number;
     topActivePages: Array<{ url: string; visitors: number }>;
 }
