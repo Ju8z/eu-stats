@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { statsApi } from '@/api/statsApi';
 import type { DeviceStats, EventStats, GeoStats, OverviewStats, PageStats, RealTimeStats, ReferrerStats, VisitorSeries } from '@/types/stats';
@@ -25,6 +26,7 @@ const emptyBundle: SiteStatsBundle = {
 };
 
 const REFRESH_INTERVAL_MILLIS = 3000;
+const INVALID_SITE_MESSAGE = 'Open analytics from the dashboard so the page uses a valid site id.';
 
 function toGeneralPeriod(period: string): string {
     if (period === '1h') {
@@ -44,6 +46,19 @@ function toVisitorsInterval(period: string): string {
     return 'day';
 }
 
+function toStatsLoadErrorMessage(error: unknown, siteId: number): string {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return `Site ${ siteId } was not found. Open the dashboard and choose an existing site.`;
+    }
+
+    return 'Failed to load analytics. Please check if backend and database are running.';
+}
+
+function firstRejectedReason(results: PromiseSettledResult<unknown>[]): unknown {
+    const rejectedResult = results.find((result) => result.status === 'rejected');
+    return rejectedResult?.status === 'rejected' ? rejectedResult.reason : null;
+}
+
 /**
  * Centralizes analytics polling and partial-refresh behavior for one site.
  * The hook keeps dashboard pages from coordinating multiple endpoints and preserves the last successful
@@ -52,11 +67,16 @@ function toVisitorsInterval(period: string): string {
 export function useStats(siteId: number, period = '30d') {
     const [stats, setStats] = useState<SiteStatsBundle>(emptyBundle);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const hasLoadedRef = useRef(false);
 
     const refreshAll = useCallback(async(showLoading: boolean) => {
         if (!Number.isFinite(siteId) || siteId <= 0) {
+            setError(INVALID_SITE_MESSAGE);
             setIsLoading(false);
+            return;
+        }
+        if (!showLoading && !hasLoadedRef.current && error) {
             return;
         }
         if (showLoading) {
@@ -84,6 +104,25 @@ export function useStats(siteId: number, period = '30d') {
                 statsApi.events(siteId, generalPeriod)
             ]);
 
+            const results = [
+                overviewResult,
+                visitorsResult,
+                pagesResult,
+                referrersResult,
+                geoResult,
+                devicesResult,
+                eventsResult
+            ];
+            const hasSuccessfulResult = results.some((result) => result.status === 'fulfilled');
+
+            if (!hasSuccessfulResult) {
+                if (!hasLoadedRef.current) {
+                    setError(toStatsLoadErrorMessage(firstRejectedReason(results), siteId));
+                }
+                return;
+            }
+
+            setError(null);
             setStats((previous) => ({
                 ...previous,
                 overview: overviewResult.status === 'fulfilled' ? overviewResult.value : previous.overview,
@@ -100,10 +139,13 @@ export function useStats(siteId: number, period = '30d') {
                 setIsLoading(false);
             }
         }
-    }, [period, siteId]);
+    }, [error, period, siteId]);
 
     const refreshRealtime = useCallback(async() => {
         if (!Number.isFinite(siteId) || siteId <= 0) {
+            return;
+        }
+        if (!hasLoadedRef.current) {
             return;
         }
         try {
@@ -134,5 +176,10 @@ export function useStats(siteId: number, period = '30d') {
         };
     }, [refreshAll, refreshRealtime]);
 
-    return { ...stats, isLoading };
+    const refresh = useCallback(async() => {
+        await refreshAll(true);
+        await refreshRealtime();
+    }, [refreshAll, refreshRealtime]);
+
+    return { ...stats, error, isLoading, refresh };
 }

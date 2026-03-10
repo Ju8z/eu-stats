@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { EmptyState } from '@/components/common/EmptyState';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { DevicePieChart } from '@/components/charts/DevicePieChart';
 import { GeoBarChart } from '@/components/charts/GeoBarChart';
@@ -31,6 +32,35 @@ export default function SiteAnalyticsPage() {
         return <LoadingSpinner/>;
     }
 
+    if (stats.error) {
+        return (
+            <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-lg font-semibold text-zinc-900">ANALYTICS</h1>
+                    <DateRangePicker value={ period } onChange={ setPeriod }/>
+                </div>
+                <div className="max-w-lg rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                    <p>{ stats.error }</p>
+                    <div className="mt-3 flex gap-2">
+                        <button
+                            type="button"
+                            onClick={ () => void stats.refresh() }
+                            className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+                        >
+                            RETRY
+                        </button>
+                        <Link
+                            to="/dashboard"
+                            className="rounded border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+                        >
+                            DASHBOARD
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -59,6 +89,13 @@ export default function SiteAnalyticsPage() {
                     { stats.devices && <DevicePieChart data={ stats.devices }/> }
                     { stats.devices && <OperatingSystemPieChart data={ stats.devices }/> }
                 </section>
+            ) }
+
+            { stats.overview && stats.overview.totalPageviews === 0 && (
+                <EmptyState
+                    title="No analytics yet"
+                    description="Open the demo pages with the correct ?siteId= value or add the tracker snippet to your site."
+                />
             ) }
 
             <section className="space-y-3">
