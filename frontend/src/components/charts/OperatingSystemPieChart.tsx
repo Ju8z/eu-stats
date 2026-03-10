@@ -1,4 +1,3 @@
-import React from 'react';
 import type { DeviceStats } from '@/types/stats';
 import { PieChart, type PieChartItem } from '@/components/charts/PieChart';
 
@@ -13,11 +12,16 @@ function toOperatingSystemPieItems(data: DeviceStats): PieChartItem[] {
     }));
 }
 
-export class OperatingSystemPieChart extends React.PureComponent<{ data: DeviceStats }> {
+interface OperatingSystemPieChartProps {
+    data: DeviceStats;
+}
 
-    render() {
-        return (
-            <PieChart
-                title="Operating Systems" emptyMessage="No operating system data yet." items={ toOperatingSystemPieItems(this.props.data) }/>);
-    }
+export function OperatingSystemPieChart({ data }: OperatingSystemPieChartProps) {
+    return (
+        <PieChart
+            title="Operating Systems"
+            emptyMessage="No operating system data yet."
+            items={ toOperatingSystemPieItems(data) }
+        />
+    );
 }

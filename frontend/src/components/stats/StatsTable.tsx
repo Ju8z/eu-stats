@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface Column<T> {
     key: string;
@@ -11,32 +11,30 @@ interface StatsTableProps<T> {
     rows: T[];
 }
 
-export class StatsTable<T extends Record<string, unknown>> extends React.Component<StatsTableProps<T>> {
-
-    render() {
-        return (
-            <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-                <table className="min-w-full text-xs">
-                    <thead className="bg-zinc-50">
+export function StatsTable<T extends Record<string, unknown>>({ columns, rows }: StatsTableProps<T>) {
+    return (
+        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+            <table className="min-w-full text-xs">
+                <thead className="bg-zinc-50">
                     <tr>
-                        { this.props.columns.map((column) => (
+                        { columns.map((column) => (
                             <th key={ column.key } className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-zinc-400">
                                 { column.title }
                             </th>
                         )) }
                     </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-100">
-                    { this.props.rows.length === 0 ? (
+                </thead>
+                <tbody className="divide-y divide-zinc-100">
+                { rows.length === 0 ? (
                         <tr>
-                            <td colSpan={ this.props.columns.length } className="px-3 py-3 text-center text-zinc-400">
+                            <td colSpan={ columns.length } className="px-3 py-3 text-center text-zinc-400">
                                 No data for this period.
                             </td>
                         </tr>
                     ) : (
-                        this.props.rows.map((row, index) => (
+                    rows.map((row, index) => (
                             <tr key={ index } className="hover:bg-zinc-50">
-                                { this.props.columns.map((column) => (
+                                { columns.map((column) => (
                                     <td key={ column.key } className="px-3 py-1.5 text-zinc-700">
                                         { column.render(row) }
                                     </td>
@@ -44,9 +42,8 @@ export class StatsTable<T extends Record<string, unknown>> extends React.Compone
                             </tr>
                         ))
                     ) }
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
+                </tbody>
+            </table>
+        </div>
+    );
 }

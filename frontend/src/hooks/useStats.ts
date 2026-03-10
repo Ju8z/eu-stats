@@ -26,19 +26,22 @@ const emptyBundle: SiteStatsBundle = {
 
 const REFRESH_INTERVAL_MILLIS = 3000;
 
-function hasSameData<T>(current: T, incoming: T): boolean {
-    if (current === incoming) {
-        return true;
+function toGeneralPeriod(period: string): string {
+    if (period === '1h') {
+        return 'today';
     }
-    if (current == null || incoming == null) {
-        return false;
+    return period;
+}
+
+function toVisitorsInterval(period: string): string {
+    if (period === '1h') {
+        return 'minute';
     }
-    try {
-        return JSON.stringify(current) === JSON.stringify(incoming);
-    } catch (error_) {
-        console.error('JSON.stringify error in hasSameData:', error_);
-        return false;
+    if (period === 'today') {
+        return 'hour';
     }
+
+    return 'day';
 }
 
 export function useStats(siteId: number, period = '30d') {
@@ -54,17 +57,19 @@ export function useStats(siteId: number, period = '30d') {
         if (showLoading) {
             setIsLoading(true);
         }
-        const generalPeriod = period === '1h' ? 'today' : period;
-
-        let visitorsInterval = 'day';
-        if (period === '1h') {
-            visitorsInterval = 'minute';
-        } else if (period === 'today') {
-            visitorsInterval = 'hour';
-        }
+        const generalPeriod = toGeneralPeriod(period);
+        const visitorsInterval = toVisitorsInterval(period);
 
         try {
-            const results = await Promise.allSettled([
+            const [
+                overviewResult,
+                visitorsResult,
+                pagesResult,
+                referrersResult,
+                geoResult,
+                devicesResult,
+                eventsResult
+            ] = await Promise.allSettled([
                 statsApi.overview(siteId, generalPeriod),
                 statsApi.visitors(siteId, period, visitorsInterval),
                 statsApi.pages(siteId, generalPeriod),
@@ -74,41 +79,16 @@ export function useStats(siteId: number, period = '30d') {
                 statsApi.events(siteId, generalPeriod)
             ]);
 
-            setStats((prev) => {
-                let changed = false;
-                const next: SiteStatsBundle = { ...prev };
-
-                if (results[0].status === 'fulfilled' && !hasSameData(prev.overview, results[0].value)) {
-                    next.overview = results[0].value;
-                    changed = true;
-                }
-                if (results[1].status === 'fulfilled' && !hasSameData(prev.visitors, results[1].value)) {
-                    next.visitors = results[1].value;
-                    changed = true;
-                }
-                if (results[2].status === 'fulfilled' && !hasSameData(prev.pages, results[2].value)) {
-                    next.pages = results[2].value;
-                    changed = true;
-                }
-                if (results[3].status === 'fulfilled' && !hasSameData(prev.referrers, results[3].value)) {
-                    next.referrers = results[3].value;
-                    changed = true;
-                }
-                if (results[4].status === 'fulfilled' && !hasSameData(prev.geo, results[4].value)) {
-                    next.geo = results[4].value;
-                    changed = true;
-                }
-                if (results[5].status === 'fulfilled' && !hasSameData(prev.devices, results[5].value)) {
-                    next.devices = results[5].value;
-                    changed = true;
-                }
-                if (results[6].status === 'fulfilled' && !hasSameData(prev.events, results[6].value)) {
-                    next.events = results[6].value;
-                    changed = true;
-                }
-
-                return changed ? next : prev;
-            });
+            setStats((previous) => ({
+                ...previous,
+                overview: overviewResult.status === 'fulfilled' ? overviewResult.value : previous.overview,
+                visitors: visitorsResult.status === 'fulfilled' ? visitorsResult.value : previous.visitors,
+                pages: pagesResult.status === 'fulfilled' ? pagesResult.value : previous.pages,
+                referrers: referrersResult.status === 'fulfilled' ? referrersResult.value : previous.referrers,
+                geo: geoResult.status === 'fulfilled' ? geoResult.value : previous.geo,
+                devices: devicesResult.status === 'fulfilled' ? devicesResult.value : previous.devices,
+                events: eventsResult.status === 'fulfilled' ? eventsResult.value : previous.events
+            }));
             hasLoadedRef.current = true;
         } finally {
             if (showLoading) {
@@ -123,11 +103,7 @@ export function useStats(siteId: number, period = '30d') {
         }
         try {
             const realtime = await statsApi.realtime(siteId);
-            setStats((prev) =>
-                hasSameData(prev.realtime, realtime)
-                    ? prev
-                    : { ...prev, realtime }
-            );
+            setStats((previous) => ({ ...previous, realtime }));
         } catch (error_) {
             // Keep previous realtime snapshot if a single poll fails, just in case..
             console.error('Failed to refresh realtime stats:', error_);
@@ -135,7 +111,8 @@ export function useStats(siteId: number, period = '30d') {
     }, [siteId]);
 
     const refresh = useCallback(async() => {
-        await Promise.all([refreshAll(false), refreshRealtime()]);
+        await refreshAll(false);
+        await refreshRealtime();
     }, [refreshAll, refreshRealtime]);
 
     useEffect(() => {

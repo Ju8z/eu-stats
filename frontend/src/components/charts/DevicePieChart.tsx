@@ -1,4 +1,3 @@
-import React from 'react';
 import type { DeviceStats } from '@/types/stats';
 import { PieChart, type PieChartItem } from '@/components/charts/PieChart';
 
@@ -9,9 +8,10 @@ function toDevicePieItems(data: DeviceStats): PieChartItem[] {
     }));
 }
 
-export class DevicePieChart extends React.PureComponent<{ data: DeviceStats }> {
+interface DevicePieChartProps {
+    data: DeviceStats;
+}
 
-    render() {
-        return <PieChart title="Devices" emptyMessage="No device data yet." items={ toDevicePieItems(this.props.data) }/>;
-    }
+export function DevicePieChart({ data }: DevicePieChartProps) {
+    return <PieChart title="Devices" emptyMessage="No device data yet." items={ toDevicePieItems(data) }/>;
 }

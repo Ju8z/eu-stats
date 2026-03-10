@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { type SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { sitesApi } from '@/api/sitesApi';
 import { SnippetDisplay } from '@/components/sites/SnippetDisplay';
@@ -22,7 +22,7 @@ export default function SiteSettingsPage() {
         sitesApi.snippet(numericSiteId).then((response) => setSnippet(response.snippetHtml));
     }, [numericSiteId]);
 
-    const onSubmit = async(event: React.SyntheticEvent<HTMLFormElement>) => {
+    const onSubmit = async(event: SyntheticEvent<HTMLFormElement>) => {
         event.preventDefault();
         await sitesApi.update(numericSiteId, { name, domain });
         setSaved(true);

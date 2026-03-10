@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { DevicePieChart } from '@/components/charts/DevicePieChart';
@@ -17,17 +17,10 @@ export default function SiteAnalyticsPage() {
     const numericSiteId = Number(siteId);
     const [period, setPeriod] = useState('30d');
     const stats = useStats(numericSiteId, period);
-
-    const overviewCards = useMemo(() => {
-        if (!stats.overview) {
-            return [];
-        }
-
-        return [
-            { title: 'Pageviews', value: formatNumber(stats.overview.totalPageviews), change: stats.overview.comparison.pageviewsChange },
-            { title: 'Visitors', value: formatNumber(stats.overview.uniqueVisitors), change: stats.overview.comparison.visitorsChange }
-        ];
-    }, [stats.overview]);
+    const overviewCards = stats.overview ? [
+        { title: 'Pageviews', value: formatNumber(stats.overview.totalPageviews), change: stats.overview.comparison.pageviewsChange },
+        { title: 'Visitors', value: formatNumber(stats.overview.uniqueVisitors), change: stats.overview.comparison.visitorsChange }
+    ] : [];
 
     if (stats.isLoading) {
         return <LoadingSpinner/>;

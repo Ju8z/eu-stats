@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { type SyntheticEvent, useState } from 'react';
 import { sitesApi } from '@/api/sitesApi';
 import { SnippetDisplay } from '@/components/sites/SnippetDisplay';
 
@@ -8,7 +8,7 @@ export default function AddSitePage() {
     const [siteId, setSiteId] = useState<number | null>(null);
     const [snippet, setSnippet] = useState<string>('');
 
-    const onSubmit = async(event: React.SyntheticEvent<HTMLFormElement>) => {
+    const onSubmit = async(event: SyntheticEvent<HTMLFormElement>) => {
         event.preventDefault();
         const created = await sitesApi.create({ name, domain });
         const snippetResponse = await sitesApi.snippet(created.id);

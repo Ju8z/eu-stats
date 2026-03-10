@@ -1,28 +1,41 @@
-import React from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-type CopyButtonState = {
-    copied: boolean;
-};
+interface CopyButtonProps {
+    link: string;
+}
 
-export class CopyButton extends React.Component<{ link: string }, CopyButtonState> {
+export function CopyButton({ link }: CopyButtonProps) {
+    const [copied, setCopied] = useState(false);
+    const timeoutRef = useRef<number | null>(null);
 
-    state: CopyButtonState = { copied: false };
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current !== null) {
+                globalThis.window.clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
 
-    render() {
-        return (
-            <button
-                type="button"
-                onClick={ this.onCopy }
-                className="rounded bg-zinc-900 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-zinc-700"
-            >
-                { this.state.copied ? 'COPIED!' : 'COPY' }
-            </button>
-        );
-    }
+    const onCopy = async() => {
+        await navigator.clipboard.writeText(link);
+        setCopied(true);
 
-    private onCopy = async() => {
-        await navigator.clipboard.writeText(this.props.link);
-        this.setState({ copied: true });
-        globalThis.window.setTimeout(() => this.setState({ copied: false }), 1200);
+        if (timeoutRef.current !== null) {
+            globalThis.window.clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = globalThis.window.setTimeout(() => {
+            setCopied(false);
+            timeoutRef.current = null;
+        }, 1200);
     };
+
+    return (
+        <button
+            type="button"
+            onClick={ () => void onCopy() }
+            className="rounded bg-zinc-900 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-zinc-700"
+        >
+            { copied ? 'COPIED!' : 'COPY' }
+        </button>
+    );
 }
