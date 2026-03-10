@@ -81,7 +81,6 @@ public class CollectionService {
 				userAgentDetails.os(),
 				userAgentDetails.osVersion(),
 				userAgentDetails.deviceType(),
-				payload.screenResolution(),
 				geoIpResult.country(),
 				payload.eventType(),
 				payload.eventName(),

@@ -14,7 +14,6 @@
         url: string;
         title: string;
         referrer: string;
-        screenResolution: string;
         userAgent: string;
         eventType: TrackerEventType;
         eventName: string | null;
@@ -115,15 +114,11 @@
 
         // Build the payload expected by backend CollectPayload.
         function buildPayload(eventType: TrackerEventType, eventName: string | null): CollectPayload {
-            const screenWidth = trackerWindow.screen.width || 0;
-            const screenHeight = trackerWindow.screen.height || 0;
-
             return {
                 siteId,
                 url: resolvePath(trackerWindow.location.href),
                 title: trackerDocument.title || '',
                 referrer: resolveReferrerDomain(),
-                screenResolution: screenWidth + 'x' + screenHeight,
                 userAgent: navigator.userAgent || '',
                 eventType,
                 eventName,

@@ -19,12 +19,11 @@ public interface DeviceStatRepository extends JpaRepository<DeviceStat, Long> {
 			    d.browserVersion AS browserVersion,
 			    d.os AS os,
 			    d.osVersion AS osVersion,
-			    d.screenResolution AS screenResolution,
 			    CAST(SUM(d.visits) AS long) AS visits
 			FROM DeviceStat d
 			WHERE d.siteId = :siteId
 			  AND d.statDate BETWEEN :fromDate AND :toDate
-			GROUP BY d.deviceType, d.browser, d.browserVersion, d.os, d.osVersion, d.screenResolution
+			GROUP BY d.deviceType, d.browser, d.browserVersion, d.os, d.osVersion
 			""")
 	List<DeviceBreakdownProjection> findBreakdown(@Param("siteId") Long siteId,
 			@Param("fromDate") LocalDate fromDate,

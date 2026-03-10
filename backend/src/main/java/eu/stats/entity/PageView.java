@@ -49,9 +49,6 @@ public class PageView {
 	
 	@Column(length = 20)
 	private String deviceType;
-	
-	@Column(length = 20)
-	private String screenResolution;
 
 	@Column(length = 2)
 	private String country;
@@ -72,7 +69,7 @@ public class PageView {
 	
 	public PageView(Long id, Long siteId, String visitorHash, String pageUrl, String pageTitle,
 			String referrer, String referrerCategory, String browser, String browserVersion, String os, String osVersion, String deviceType,
-			String screenResolution, String country,
+			String country,
 			String eventType, String eventName, OffsetDateTime viewedAt,
 			OffsetDateTime createdAt) {
 		this.id = id;
@@ -87,7 +84,6 @@ public class PageView {
 		this.os = os;
 		this.osVersion = osVersion;
 		this.deviceType = deviceType;
-		this.screenResolution = screenResolution;
 		this.country = country;
 		this.eventType = eventType;
 		this.eventName = eventName;
@@ -189,14 +185,6 @@ public class PageView {
 	
 	public void setDeviceType(String deviceType) {
 		this.deviceType = deviceType;
-	}
-	
-	public String getScreenResolution() {
-		return screenResolution;
-	}
-	
-	public void setScreenResolution(String screenResolution) {
-		this.screenResolution = screenResolution;
 	}
 	
 	public String getCountry() {

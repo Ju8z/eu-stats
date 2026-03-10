@@ -19,9 +19,6 @@ public record CollectPayload(
 		@Size(max = 500)
 		String referrer,
 		
-		@Size(max = 20)
-		String screenResolution,
-		
 		@NotBlank
 		@Size(max = 1024)
 		String userAgent,

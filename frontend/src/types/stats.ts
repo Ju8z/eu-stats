@@ -52,7 +52,6 @@ export interface DeviceStats {
     deviceTypes: Array<{ type: string; visits: number; percentage: number }>;
     browsers: Array<{ name: string; version: string; visits: number; percentage: number }>;
     operatingSystems: Array<{ name: string; version: string; visits: number; percentage: number }>;
-    screenResolutions: Array<{ resolution: string; visits: number; percentage: number }>;
 }
 
 export interface EventStats {

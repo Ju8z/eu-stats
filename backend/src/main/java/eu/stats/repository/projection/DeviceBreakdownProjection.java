@@ -12,7 +12,5 @@ public interface DeviceBreakdownProjection {
 	
 	String getOsVersion();
 	
-	String getScreenResolution();
-	
 	Long getVisits();
 }

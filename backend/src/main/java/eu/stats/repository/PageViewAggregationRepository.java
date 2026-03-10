@@ -106,7 +106,7 @@ public class PageViewAggregationRepository {
 	private static final String DEVICE_STATS_SQL = """
 			INSERT INTO device_stats (
 			    site_id, stat_date, device_type, browser, browser_version, os, os_version,
-			    screen_resolution, visits, unique_visitors
+			    visits, unique_visitors
 			)
 			SELECT
 			    pv.site_id,
@@ -116,7 +116,6 @@ public class PageViewAggregationRepository {
 			    pv.browser_version,
 			    pv.os,
 			    pv.os_version,
-			    pv.screen_resolution,
 			    COUNT(*),
 			    COUNT(DISTINCT pv.visitor_hash)
 			FROM pageviews pv
@@ -129,9 +128,8 @@ public class PageViewAggregationRepository {
 			    pv.browser,
 			    pv.browser_version,
 			    pv.os,
-			    pv.os_version,
-			    pv.screen_resolution
-			ON CONFLICT (site_id, stat_date, device_type, browser, browser_version, os, os_version, screen_resolution)
+			    pv.os_version
+			ON CONFLICT (site_id, stat_date, device_type, browser, browser_version, os, os_version)
 			DO UPDATE SET
 			    visits = EXCLUDED.visits,
 			    unique_visitors = EXCLUDED.unique_visitors

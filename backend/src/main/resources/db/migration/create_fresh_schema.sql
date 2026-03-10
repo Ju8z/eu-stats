@@ -26,7 +26,6 @@ CREATE TABLE pageviews
     os                VARCHAR(100),
     os_version        VARCHAR(20),
     device_type       VARCHAR(20),
-    screen_resolution VARCHAR(20),
     country           VARCHAR(2),
     event_type        VARCHAR(50)   NOT NULL DEFAULT 'pageview',
     event_name        VARCHAR(255),
@@ -103,10 +102,9 @@ CREATE TABLE device_stats
     browser_version   VARCHAR(20),
     os                VARCHAR(100),
     os_version        VARCHAR(20),
-    screen_resolution VARCHAR(20),
     visits            INTEGER NOT NULL DEFAULT 0,
     unique_visitors   INTEGER NOT NULL DEFAULT 0,
-    UNIQUE (site_id, stat_date, device_type, browser, browser_version, os, os_version, screen_resolution)
+    UNIQUE (site_id, stat_date, device_type, browser, browser_version, os, os_version)
 );
 
 CREATE TABLE event_stats

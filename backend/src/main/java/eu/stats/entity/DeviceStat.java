@@ -38,9 +38,6 @@ public class DeviceStat {
 	@Column(length = 20)
 	private String osVersion;
 	
-	@Column(length = 20)
-	private String screenResolution;
-	
 	@Column(nullable = false)
 	private Integer visits;
 	
@@ -109,14 +106,6 @@ public class DeviceStat {
 	
 	public void setOsVersion(String osVersion) {
 		this.osVersion = osVersion;
-	}
-	
-	public String getScreenResolution() {
-		return screenResolution;
-	}
-	
-	public void setScreenResolution(String screenResolution) {
-		this.screenResolution = screenResolution;
 	}
 	
 	public Integer getVisits() {

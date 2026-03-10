@@ -6,8 +6,7 @@ public record DeviceStatsResponse(
 		
 		List<DeviceItem> deviceTypes,
 		List<TechItem> browsers,
-		List<TechItem> operatingSystems,
-		List<ResolutionItem> screenResolutions
+		List<TechItem> operatingSystems
 
 ) {
 	
@@ -29,12 +28,4 @@ public record DeviceStatsResponse(
 	) {
 	}
 	
-	public record ResolutionItem(
-			
-			String resolution,
-			long visits,
-			double percentage
-	
-	) {
-	}
 }

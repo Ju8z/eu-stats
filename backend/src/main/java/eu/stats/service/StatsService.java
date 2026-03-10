@@ -181,7 +181,6 @@ public class StatsService {
 		Map<String, Long> visitsByDeviceType = new HashMap<>();
 		Map<TechnologyKey, Long> visitsByBrowser = new HashMap<>();
 		Map<TechnologyKey, Long> visitsByOperatingSystem = new HashMap<>();
-		Map<String, Long> visitsByResolution = new HashMap<>();
 		
 		for (DeviceBreakdownProjection row : rows) {
 			long visits = visits(row);
@@ -194,14 +193,12 @@ public class StatsService {
 					new TechnologyKey(defaultString(row.getOs(), UNKNOWN_LABEL), defaultString(row.getOsVersion(), EMPTY_VALUE)),
 					visits,
 					Long::sum);
-			visitsByResolution.merge(defaultString(row.getScreenResolution(), UNKNOWN_LABEL), visits, Long::sum);
 		}
 		
 		return new DeviceStatsResponse(
 				toDeviceItems(visitsByDeviceType, totalVisits),
 				toTechItems(visitsByBrowser, totalVisits),
-				toTechItems(visitsByOperatingSystem, totalVisits),
-				toResolutionItems(visitsByResolution, totalVisits));
+				toTechItems(visitsByOperatingSystem, totalVisits));
 	}
 	
 	private List<DeviceStatsResponse.DeviceItem> toDeviceItems(Map<String, Long> visitsByDeviceType, long totalVisits) {
@@ -221,17 +218,6 @@ public class StatsService {
 				.map(entry -> new DeviceStatsResponse.TechItem(
 						entry.getKey().name(),
 						entry.getKey().version(),
-						entry.getValue(),
-						percentage(entry.getValue(), totalVisits)))
-				.toList();
-	}
-	
-	private List<DeviceStatsResponse.ResolutionItem> toResolutionItems(Map<String, Long> visitsByResolution, long totalVisits) {
-		return visitsByResolution.entrySet().stream()
-				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-				.limit(TOP_BREAKDOWN_LIMIT)
-				.map(entry -> new DeviceStatsResponse.ResolutionItem(
-						entry.getKey(),
 						entry.getValue(),
 						percentage(entry.getValue(), totalVisits)))
 				.toList();
