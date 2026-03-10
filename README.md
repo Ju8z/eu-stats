@@ -260,6 +260,7 @@ docker compose up -d postgres
 From the repository root:
 
 ```bash
+npm run build
 npm run all
 ```
 
