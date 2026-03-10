@@ -95,25 +95,29 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 	Long countDistinctVisitorsByIngestedSince(@Param("siteId") Long siteId,
 			@Param("fromTs") OffsetDateTime fromTs);
 	
-	// Heartbeats reuse event_name as a per-tab id. We first keep only the most
-	// recent heartbeat per tab, then group those tabs by page_url so multiple
-	// active tabs on the same page are counted together.
+	// Keep only the latest heartbeat per visitor in the live window, then group
+	// visitors by page_url. This keeps topActivePages aligned with the
+	// activeVisitors metric, which is also visitor-based.
 	@Query(value = """
 			WITH last_seen AS (
-			  SELECT DISTINCT ON (event_name)
-			    event_name,
-			    page_url
+			  SELECT
+			    visitor_hash,
+			    page_url,
+			    ROW_NUMBER() OVER (
+			      PARTITION BY visitor_hash
+			      ORDER BY COALESCE(created_at, viewed_at) DESC, id DESC
+			    ) AS rn
 			  FROM pageviews
 			  WHERE site_id = :siteId
 			    AND event_type = 'heartbeat'
-			    AND event_name IS NOT NULL
+			    AND visitor_hash IS NOT NULL
 			    AND COALESCE(created_at, viewed_at) >= :fromTs
-			  ORDER BY event_name, COALESCE(created_at, viewed_at) DESC, id DESC
 			)
 			SELECT
 			  page_url AS pageUrl,
 			  COUNT(*)::bigint AS visitors
 			FROM last_seen
+			WHERE rn = 1
 			GROUP BY page_url
 			ORDER BY visitors DESC, page_url ASC
 			""", nativeQuery = true)

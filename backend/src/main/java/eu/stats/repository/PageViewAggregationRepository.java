@@ -131,10 +131,8 @@ public class PageViewAggregationRepository {
 			    pv.os,
 			    pv.os_version,
 			    pv.screen_resolution
-			ON CONFLICT (site_id, stat_date, device_type, browser, os, screen_resolution)
+			ON CONFLICT (site_id, stat_date, device_type, browser, browser_version, os, os_version, screen_resolution)
 			DO UPDATE SET
-			    browser_version = EXCLUDED.browser_version,
-			    os_version = EXCLUDED.os_version,
 			    visits = EXCLUDED.visits,
 			    unique_visitors = EXCLUDED.unique_visitors
 			""";

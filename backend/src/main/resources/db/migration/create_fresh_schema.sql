@@ -1,3 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS public;
+SET search_path TO public;
+
 CREATE TABLE sites
 (
     id         BIGSERIAL PRIMARY KEY,
@@ -103,7 +106,7 @@ CREATE TABLE device_stats
     screen_resolution VARCHAR(20),
     visits            INTEGER NOT NULL DEFAULT 0,
     unique_visitors   INTEGER NOT NULL DEFAULT 0,
-    UNIQUE (site_id, stat_date, device_type, browser, os, screen_resolution)
+    UNIQUE (site_id, stat_date, device_type, browser, browser_version, os, os_version, screen_resolution)
 );
 
 CREATE TABLE event_stats
