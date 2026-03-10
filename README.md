@@ -283,11 +283,26 @@ Under the hood it runs:
 ### 5. Create A Site
 
 1. Open the dashboard
+
+<img width="1050" height="164" alt="image" src="https://github.com/user-attachments/assets/af148c48-2393-4745-9f6e-c081c62cca98" />
+
 2. Add a site
+
+<img width="670" height="276" alt="image" src="https://github.com/user-attachments/assets/b95bea55-ba4a-4f10-91f6-e1dfd89cf4eb" />
+
 3. Copy the generated tracker snippet
+
+<img width="635" height="457" alt="image" src="https://github.com/user-attachments/assets/b53d6e5d-edae-486e-bf0c-af0c4efe1637" />
+
 4. Place it on your page
 
+<img width="539" height="192" alt="image" src="https://github.com/user-attachments/assets/95e23ea4-9f85-4327-a471-2a08d164c11f" />
+
+
 ### 6. View Analytics
+
+
+<img width="1019" height="1189" alt="image" src="https://github.com/user-attachments/assets/53cb5e60-7d6f-4175-b93e-b25b4893dc43" />
 
 After the page receives traffic, open the analytics page for that site in the dashboard.
 
