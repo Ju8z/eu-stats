@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api';
+// Defaulting to a relative API path keeps browser requests on the current host.
+// That makes local dev, VPS preview, and reverse-proxied deployments work without hard-coded localhost URLs.
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 const apiClient = axios.create({
     baseURL: apiBaseUrl,
