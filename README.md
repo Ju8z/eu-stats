@@ -237,7 +237,7 @@ VITE_API_BASE_URL=http://localhost:8080/api
 
 ## Quick Start
 
-### 1. Install Root Script Dependency
+### 1. Install npm Workspace Dependencies
 
 From the repository root:
 
@@ -245,17 +245,9 @@ From the repository root:
 npm install
 ```
 
-This installs the root-level helper dependency used by `npm run all`.
+This installs the root-level helper dependency and the frontend workspace dependencies used by the root build scripts.
 
-### 2. Install Frontend Dependencies
-
-```bash
-cd frontend
-npm install
-cd ..
-```
-
-### 3. Start PostgreSQL
+### 2. Start PostgreSQL
 
 If Docker is running:
 
@@ -263,7 +255,7 @@ If Docker is running:
 docker compose up -d postgres
 ```
 
-### 4. Start Backend And Frontend Together
+### 3. Start Backend And Frontend Together
 
 From the repository root:
 
@@ -282,20 +274,20 @@ Under the hood it runs:
 - `npm run dev:frontend`
 - `npm run dev:backend`
 
-### 5. Open The App
+### 4. Open The App
 
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8080`
 - Health: `http://localhost:8080/actuator/health`
 
-### 6. Create A Site
+### 5. Create A Site
 
 1. Open the dashboard
 2. Add a site
 3. Copy the generated tracker snippet
 4. Place it on your page
 
-### 7. View Analytics
+### 6. View Analytics
 
 After the page receives traffic, open the analytics page for that site in the dashboard.
 
@@ -319,9 +311,10 @@ Builds the whole project in the right order:
 
 Under the hood it runs:
 
-- `npm run build:tracker`
 - `npm run build:frontend`
 - `npm run build:backend`
+
+`npm run build:frontend` rebuilds `backend/src/main/resources/static/tracker.js` from `frontend/tracker/tracker.ts` before the Vite production bundle is created.
 
 Important:
 
@@ -333,7 +326,7 @@ Important:
 - `npm run build:tracker`
   Rebuilds `backend/src/main/resources/static/tracker.js` from `frontend/tracker/tracker.ts`
 - `npm run build:frontend`
-  Builds the React app
+  Rebuilds the tracker asset and then builds the React app
 - `npm run build:backend`
   Builds the Spring Boot application jar and skips test compilation and test execution
 - `npm run dev:frontend`
@@ -361,11 +354,13 @@ npm run build
 npm run preview
 ```
 
+`npm run build` in `frontend/` also regenerates `../backend/src/main/resources/static/tracker.js`.
+
 ### Tracker Only
 
 ```bash
 cd frontend
-npm exec -- tsc -p tsconfig.tracker.json
+npm run build:tracker
 ```
 
 ## API Surface
