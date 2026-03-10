@@ -9,8 +9,23 @@ import org.springframework.data.repository.query.Param;
 
 import eu.stats.entity.HourlyStat;
 
+/**
+ * Keeps hourly statistics query rules at the storage boundary.
+ * That lets services talk in analytics terms while database-specific grouping, sorting, and conflict
+ * handling stay close to PostgreSQL.
+ */
 public interface HourlyStatRepository extends JpaRepository<HourlyStat, Long> {
 	
+	/**
+	 * Reads pre-aggregated hourly rows for short-range charts.
+	 * Using hourly summaries keeps recent charts responsive without rebuilding every hour from raw tracker
+	 * events.
+	 *
+	 * @param siteId        site identifier
+	 * @param fromInclusive inclusive start timestamp
+	 * @param toExclusive   exclusive end timestamp
+	 * @return hourly statistics rows ordered by hour
+	 */
 	@Query("""
 			SELECT h
 			FROM HourlyStat h

@@ -20,6 +20,11 @@ import eu.stats.repository.SiteRepository;
 import eu.stats.service.stats.AggregateSummaryReader;
 import eu.stats.util.DateUtil;
 
+/**
+ * Centralizes site lifecycle rules.
+ * Keeping creation, validation, summary lookup, and snippet access together avoids duplicating
+ * site-specific behavior across controllers and analytics services.
+ */
 @Service
 public class SiteService {
 	
@@ -41,6 +46,14 @@ public class SiteService {
 		this.clock = clock;
 	}
 	
+	/**
+	 * Normalizes site input before persistence.
+	 * Doing this once keeps domain casing and empty starting totals consistent for every caller that creates a
+	 * site.
+	 *
+	 * @param request create site request
+	 * @return site response for the newly created site
+	 */
 	@Transactional
 	public SiteResponse createSite(CreateSiteRequest request) {
 		validateDomain(request.domain());
@@ -53,6 +66,13 @@ public class SiteService {
 		return toSiteResponse(saved, EMPTY_TOTAL, EMPTY_TOTAL);
 	}
 	
+	/**
+	 * Adds recent summary totals to the administration list.
+	 * Keeping this composition here prevents controllers from coordinating site reads with separate overview
+	 * queries.
+	 *
+	 * @return site list response
+	 */
 	public SiteListResponse listSites() {
 		List<SiteResponse> sites = siteRepository.findAll().stream()
 				.sorted(Comparator.comparing(Site::getCreatedAt).reversed())
@@ -62,10 +82,27 @@ public class SiteService {
 		return new SiteListResponse(sites);
 	}
 	
+	/**
+	 * Reads one site through the shared mapping path.
+	 * Reusing the same lookup and mapping logic keeps not-found behavior and last-thirty-day totals consistent
+	 * across callers.
+	 *
+	 * @param siteId site identifier
+	 * @return site response for the requested site
+	 */
 	public SiteResponse getSite(Long siteId) {
 		return toSiteResponse(getPublicSite(siteId));
 	}
 	
+	/**
+	 * Reapplies creation rules when site data changes.
+	 * Normalizing on update prevents domain formatting from drifting based on which endpoint touched the site
+	 * last.
+	 *
+	 * @param siteId site identifier
+	 * @param request update site request
+	 * @return site response for the updated site
+	 */
 	@Transactional
 	public SiteResponse updateSite(Long siteId, UpdateSiteRequest request) {
 		validateDomain(request.domain());
@@ -77,6 +114,13 @@ public class SiteService {
 		return toSiteResponse(saved);
 	}
 	
+	/**
+	 * Routes deletion through the same existence rules used elsewhere.
+	 * The service raises the domain-specific missing-site exception here so controller code stays free of
+	 * repository-specific error handling.
+	 *
+	 * @param siteId site identifier
+	 */
 	@Transactional
 	public void delete(Long siteId) {
 		Site site = siteRepository.findById(siteId)
@@ -84,11 +128,27 @@ public class SiteService {
 		siteRepository.delete(site);
 	}
 	
+	/**
+	 * Generates snippets only for validated sites.
+	 * That keeps tracker embed generation aligned with the same existence checks used by the rest of the site
+	 * application programming interface.
+	 *
+	 * @param siteId site identifier
+	 * @return tracker snippet response
+	 */
 	public SnippetResponse getSnippet(Long siteId) {
 		Site site = getPublicSite(siteId);
 		return snippetService.buildSnippet(site);
 	}
 	
+	/**
+	 * Centralizes the missing-site check.
+	 * Downstream callers can assume the site exists once this method returns and rely on one shared exception
+	 * type when it does not.
+	 *
+	 * @param siteId site identifier
+	 * @return resolved site entity
+	 */
 	public Site getPublicSite(Long siteId) {
 		return siteRepository.findById(siteId)
 				.orElseThrow(() -> new SiteNotFoundException("Site not found"));
@@ -131,7 +191,6 @@ public class SiteService {
 				site.getName(),
 				site.getDomain(),
 				totalPageviewsLast30Days,
-				uniqueVisitorsLast30Days,
-				site.getCreatedAt());
+				uniqueVisitorsLast30Days);
 	}
 }

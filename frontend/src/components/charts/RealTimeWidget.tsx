@@ -4,6 +4,11 @@ interface RealTimeWidgetProps {
     data: RealTimeStats | null;
 }
 
+/**
+ * Displays the live activity snapshot separately from historical charts.
+ * Keeping the heartbeat-driven view isolated makes it easier to refresh or replace without affecting the
+ * rest of the analytics dashboard.
+ */
 export function RealTimeWidget({ data }: RealTimeWidgetProps) {
     const activePages = data?.topActivePages ?? [];
 

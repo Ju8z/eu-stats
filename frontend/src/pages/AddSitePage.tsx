@@ -2,6 +2,11 @@ import { type SyntheticEvent, useState } from 'react';
 import { sitesApi } from '@/api/sitesApi';
 import { SnippetDisplay } from '@/components/sites/SnippetDisplay';
 
+/**
+ * Keeps first-time site creation separate from ongoing site maintenance.
+ * The page asks for the snippet immediately after creation so users can leave with installation details
+ * instead of hunting for them in a second step.
+ */
 export default function AddSitePage() {
     const [name, setName] = useState('');
     const [domain, setDomain] = useState('');

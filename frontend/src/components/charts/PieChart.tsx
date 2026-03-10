@@ -21,6 +21,11 @@ const CHART_OPTIONS = {
     plugins: { legend: { position: 'bottom' as const, labels: { boxWidth: 10, font: { size: 11 } } } }
 };
 
+/**
+ * Defines the minimal input shape shared pie charts need.
+ * Keeping this contract small lets domain-specific chart wrappers translate richer analytics data without
+ * coupling the generic chart to backend response types.
+ */
 export interface PieChartItem {
     label: string;
     visits: number;
@@ -32,6 +37,11 @@ interface PieChartProps {
     items: PieChartItem[];
 }
 
+/**
+ * Renders a reusable pie chart from already-translated input data.
+ * The chart stays generic on purpose so analytics-specific mapping logic can live in small wrapper
+ * components instead of inside the chart itself.
+ */
 export function PieChart({ title, emptyMessage, items }: PieChartProps) {
     const chartData = {
         labels: items.map((item) => item.label),

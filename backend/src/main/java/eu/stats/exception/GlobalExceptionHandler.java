@@ -14,6 +14,11 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import eu.stats.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
+/**
+ * Keeps client-visible error formatting consistent.
+ * Centralizing exception translation lets controllers focus on success paths while failures still produce
+ * one stable response shape.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	
@@ -25,22 +30,57 @@ public class GlobalExceptionHandler {
 		this.clock = clock;
 	}
 	
+	/**
+	 * Maps a missing site to the public error envelope.
+	 * The dedicated handler keeps a common domain failure predictable for clients without forcing controllers
+	 * to know HTTP status details.
+	 *
+	 * @param ex      ex
+	 * @param request incoming servlet request
+	 * @return error response for the missing-site case
+	 */
 	@ExceptionHandler(SiteNotFoundException.class)
 	public ResponseEntity<ErrorResponse> handleSiteNotFound(SiteNotFoundException ex, HttpServletRequest request) {
 		return build(HttpStatus.NOT_FOUND, "SITE_NOT_FOUND", ex.getMessage(), request.getRequestURI());
 	}
 	
+	/**
+	 * Maps guard-clause failures to a client error response.
+	 * That keeps invalid request parameters from surfacing as generic server errors.
+	 *
+	 * @param ex ex
+	 * @param request incoming servlet request
+	 * @return error response for invalid input
+	 */
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
 		return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage(), request.getRequestURI());
 	}
 	
 	// Just a typical 404
+	
+	/**
+	 * Normalizes missing routes into the shared error envelope.
+	 * Clients do not need to special-case framework-generated not-found responses because the same payload
+	 * shape is used here.
+	 *
+	 * @param ex ex
+	 * @param request incoming servlet request
+	 * @return error response for a missing resource
+	 */
 	@ExceptionHandler(NoResourceFoundException.class)
 	public ResponseEntity<ErrorResponse> handleMissingResource(NoResourceFoundException ex, HttpServletRequest request) {
 		return build(HttpStatus.NOT_FOUND, "NOT_FOUND", "Resource not found", request.getRequestURI());
 	}
 	
+	/**
+	 * Provides a final fallback for uncaught failures.
+	 * The handler keeps error bodies consistent even when the root cause was not anticipated explicitly.
+	 *
+	 * @param ex ex
+	 * @param request incoming servlet request
+	 * @return error response for an unexpected failure
+	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
 		log.error("Unhandled exception on {} {}", request.getMethod(), request.getRequestURI(), ex);

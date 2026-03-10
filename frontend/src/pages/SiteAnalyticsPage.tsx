@@ -12,6 +12,11 @@ import { StatsTable } from '@/components/stats/StatsTable';
 import { useStats } from '@/hooks/useStats';
 import { formatNumber } from '@/utils/formatters';
 
+/**
+ * Composes the analytics dashboard from smaller cards and charts.
+ * Keeping endpoint results at the page level lets presentational widgets stay simple and unaware of the
+ * broader polling strategy.
+ */
 export default function SiteAnalyticsPage() {
     const { siteId } = useParams();
     const numericSiteId = Number(siteId);

@@ -11,6 +11,11 @@ interface StatsTableProps<T> {
     rows: T[];
 }
 
+/**
+ * Provides one small table primitive for analytics lists.
+ * The render-based column model keeps domain tables flexible without forcing each screen to duplicate table
+ * structure and empty-state handling.
+ */
 export function StatsTable<T extends Record<string, unknown>>({ columns, rows }: StatsTableProps<T>) {
     return (
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">

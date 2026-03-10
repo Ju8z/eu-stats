@@ -17,6 +17,11 @@ import eu.stats.repository.SiteRepository;
 import eu.stats.util.ReferrerClassifier;
 import jakarta.servlet.http.HttpServletRequest;
 
+/**
+ * Centralizes tracker ingestion rules.
+ * Keeping enrichment, privacy-sensitive hashing, and silent-drop behavior in one service prevents
+ * controller and persistence code from diverging on ingestion decisions.
+ */
 @Service
 public class CollectionService {
 	
@@ -47,6 +52,14 @@ public class CollectionService {
 		this.clock = clock;
 	}
 	
+	/**
+	 * Drops invalid tracker payloads before they can affect stored analytics.
+	 * Unknown sites are ignored deliberately so the tracker endpoint stays low-noise and does not leak site
+	 * existence rules, while valid payloads are enriched before persistence.
+	 *
+	 * @param payload tracking payload
+	 * @param request incoming servlet request
+	 */
 	@Transactional
 	public void collect(CollectPayload payload, HttpServletRequest request) {
 		if (payload == null || !siteRepository.existsById(payload.siteId())) {

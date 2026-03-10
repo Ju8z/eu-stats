@@ -26,6 +26,11 @@ import eu.stats.repository.projection.VisitorTimeseriesProjection;
 import eu.stats.util.DateUtil;
 import eu.stats.util.VisitorSeriesMode;
 
+/**
+ * Translates stored aggregates into chart-ready visitor series.
+ * The service chooses the cheapest accurate source for each time window so charts stay responsive without
+ * forcing callers to know the storage strategy.
+ */
 @Service
 public class VisitorTimeSeriesService {
 	
@@ -51,6 +56,16 @@ public class VisitorTimeSeriesService {
 		this.clock = clock;
 	}
 	
+	/**
+	 * Routes chart reads to the cheapest accurate data source.
+	 * The service chooses between live buckets, hourly aggregates, and daily aggregates so chart endpoints
+	 * stay responsive across very different date windows.
+	 *
+	 * @param siteId site identifier
+	 * @param mode   visitor series mode
+	 * @param range  date range
+	 * @return visitor time series response
+	 */
 	public VisitorTimeSeriesResponse getSeries(Long siteId, VisitorSeriesMode mode, DateUtil.DateRange range) {
 		List<VisitorTimeSeriesResponse.Item> data = switch (mode) {
 			case MINUTE -> minuteSeries(siteId);

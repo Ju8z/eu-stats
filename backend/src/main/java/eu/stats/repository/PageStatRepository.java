@@ -12,7 +12,23 @@ import org.springframework.data.repository.query.Param;
 import eu.stats.entity.PageStat;
 import eu.stats.repository.projection.TopPageProjection;
 
+/**
+ * Keeps page statistics query rules at the storage boundary.
+ * That lets services talk in analytics terms while database-specific grouping, sorting, and conflict
+ * handling stay close to PostgreSQL.
+ */
 public interface PageStatRepository extends JpaRepository<PageStat, Long> {
+	/**
+	 * Ranks pages in the database before service-level shaping.
+	 * Sorting and limiting in PostgreSQL keeps leaderboard queries small and avoids in-memory ranking work in
+	 * the service layer.
+	 *
+	 * @param siteId   site identifier
+	 * @param fromDate start date
+	 * @param toDate   end date
+	 * @param pageable pagination request
+	 * @return ranked page rows
+	 */
 	@Query("""
 			SELECT
 			    p.pageUrl AS pageUrl,
@@ -30,6 +46,17 @@ public interface PageStatRepository extends JpaRepository<PageStat, Long> {
 			@Param("toDate") LocalDate toDate,
 			Pageable pageable);
 	
+	/**
+	 * Ranks pages in the database before service-level shaping.
+	 * Sorting and limiting in PostgreSQL keeps leaderboard queries small and avoids in-memory ranking work in
+	 * the service layer.
+	 *
+	 * @param siteId site identifier
+	 * @param fromDate start date
+	 * @param toDate end date
+	 * @param limit maximum number of rows to return
+	 * @return ranked page rows
+	 */
 	default List<TopPageProjection> findTopPages(Long siteId,
 			LocalDate fromDate,
 			LocalDate toDate,

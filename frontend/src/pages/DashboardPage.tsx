@@ -4,6 +4,11 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { SiteCard } from '@/components/sites/SiteCard';
 import { useSites } from '@/hooks/useSites';
 
+/**
+ * Keeps the site list screen focused on hook state and rendering.
+ * Retry, loading, and empty-state policy stay readable here because data fetching is delegated to the
+ * site hook.
+ */
 export default function DashboardPage() {
     const { sites, isLoading, error, refresh } = useSites();
 

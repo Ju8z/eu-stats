@@ -1,5 +1,10 @@
 import { Link } from 'react-router-dom';
 
+/**
+ * Provides the persistent top navigation bar.
+ * Keeping branding and the primary dashboard link in one component prevents each page from duplicating the
+ * same navigation chrome.
+ */
 export function Header() {
     return (
         <header className="border-b border-zinc-200 bg-white">

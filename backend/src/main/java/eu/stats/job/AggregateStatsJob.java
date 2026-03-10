@@ -12,6 +12,11 @@ import org.springframework.stereotype.Component;
 import eu.stats.config.AppProperties;
 import eu.stats.repository.PageViewAggregationRepository;
 
+/**
+ * Refreshes derived analytics tables on a schedule.
+ * The job pushes expensive grouping work out of request time and can rerun safely when late tracker events
+ * arrive.
+ */
 @Component
 public class AggregateStatsJob {
 	
@@ -28,6 +33,11 @@ public class AggregateStatsJob {
 		this.clock = clock;
 	}
 	
+	/**
+	 * Refreshes derived tables from a configurable lookback window.
+	 * Using a lookback instead of only the last schedule tick makes reruns safe and still picks up
+	 * late-arriving tracker events.
+	 */
 	@Scheduled(fixedRate = FIXED_RATE_MILLIS)
 	public void run() {
 		OffsetDateTime viewedSince = OffsetDateTime.now(clock).minus(lookbackWindow());

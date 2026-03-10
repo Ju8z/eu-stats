@@ -10,6 +10,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+/**
+ * Keeps persistence mapping explicit for site data.
+ * The project uses handwritten entities so stored fields and lifecycle behavior remain easy to audit
+ * without code generation.
+ */
 @Entity
 @Table(name = "sites")
 public class Site {
@@ -25,7 +30,12 @@ public class Site {
 	private String name;
 	
 	private OffsetDateTime createdAt;
-
+	
+	/**
+	 * Keeps re persist writable when the entity is assembled or updated.
+	 * Explicit mutators make state changes visible in a project that favors transparent entities over
+	 * generated boilerplate.
+	 */
 	@PrePersist
 	public void onPrePersist() {
 		if (createdAt == null) {

@@ -13,8 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 /**
- * Accepts anonymous tracker payloads
- * Due problem with ads and tracker blockers, the API naming should be short and not contain "analytics" or any other word which can be blocked.
+ * Keeps tracker ingestion at a minimal web boundary.
+ * The controller limits itself to request binding so enrichment, privacy-sensitive decisions, and
+ * silent-drop rules live in the service layer.
  */
 @RestController
 @RequestMapping("/api/c")
@@ -27,7 +28,12 @@ public class CollectionController {
 	}
 	
 	/**
-	 * Stores a pageview/event payload and returns no content.
+	 * Keeps tracker ingestion on a minimal endpoint.
+	 * The controller avoids response-shaping logic so tracker calls stay lightweight and the service decides
+	 * which payloads are safe to drop.
+	 *
+	 * @param payload tracking payload
+	 * @param request incoming servlet request
 	 */
 	@PostMapping
 	@ResponseStatus(HttpStatus.NO_CONTENT)

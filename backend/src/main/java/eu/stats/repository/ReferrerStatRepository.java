@@ -12,8 +12,24 @@ import org.springframework.data.repository.query.Param;
 import eu.stats.entity.ReferrerStat;
 import eu.stats.repository.projection.TopReferrerProjection;
 
+/**
+ * Keeps referrer statistics query rules at the storage boundary.
+ * That lets services talk in analytics terms while database-specific grouping, sorting, and conflict
+ * handling stay close to PostgreSQL.
+ */
 public interface ReferrerStatRepository extends JpaRepository<ReferrerStat, Long> {
 	
+	/**
+	 * Ranks referrers in the database before service-level normalization.
+	 * That keeps direct-traffic cleanup and display labeling separate from the storage query while still
+	 * returning a bounded result set.
+	 *
+	 * @param siteId   site identifier
+	 * @param fromDate start date
+	 * @param toDate   end date
+	 * @param pageable pagination request
+	 * @return ranked referrer rows
+	 */
 	@Query("""
 			SELECT
 			    r.referrer AS referrer,
@@ -31,6 +47,17 @@ public interface ReferrerStatRepository extends JpaRepository<ReferrerStat, Long
 			@Param("toDate") LocalDate toDate,
 			Pageable pageable);
 	
+	/**
+	 * Ranks referrers in the database before service-level normalization.
+	 * That keeps direct-traffic cleanup and display labeling separate from the storage query while still
+	 * returning a bounded result set.
+	 *
+	 * @param siteId site identifier
+	 * @param fromDate start date
+	 * @param toDate end date
+	 * @param limit maximum number of rows to return
+	 * @return ranked referrer rows
+	 */
 	default List<TopReferrerProjection> findTopReferrers(Long siteId,
 			LocalDate fromDate,
 			LocalDate toDate,

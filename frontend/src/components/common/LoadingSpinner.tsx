@@ -1,3 +1,7 @@
+/**
+ * Provides a single lightweight loading affordance.
+ * Reusing one spinner keeps waiting states visually consistent and easy to change later.
+ */
 export function LoadingSpinner() {
     return (
         <div className="flex items-center justify-center py-12">

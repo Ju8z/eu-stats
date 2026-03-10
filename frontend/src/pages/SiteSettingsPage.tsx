@@ -3,6 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { sitesApi } from '@/api/sitesApi';
 import { SnippetDisplay } from '@/components/sites/SnippetDisplay';
 
+/**
+ * Keeps editing and destructive actions together under one settings screen.
+ * Loading the snippet alongside settings keeps installation details close to the place where site
+ * maintenance happens.
+ */
 export default function SiteSettingsPage() {
     const { siteId } = useParams();
     const numericSiteId = Number(siteId);

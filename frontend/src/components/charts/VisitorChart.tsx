@@ -30,6 +30,11 @@ interface VisitorChartProps {
     series: VisitorSeries;
 }
 
+/**
+ * Formats interval-aware visitor data for the shared charting library.
+ * Label formatting stays close to the chart so bucket-specific display rules are not duplicated in pages or
+ * hooks.
+ */
 export function VisitorChart({ series }: VisitorChartProps) {
     const labels = series.data.map((row) => formatLabel(row.date, series.interval));
     const chartData = {

@@ -4,6 +4,11 @@ interface CopyButtonProps {
     link: string;
 }
 
+/**
+ * Encapsulates clipboard copying behind one small component.
+ * Keeping timeout cleanup and clipboard interaction here prevents snippet views from each re-implementing
+ * browser-specific copy behavior.
+ */
 export function CopyButton({ link }: CopyButtonProps) {
     const [copied, setCopied] = useState(false);
     const timeoutRef = useRef<number | null>(null);

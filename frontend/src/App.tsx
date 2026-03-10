@@ -13,6 +13,11 @@ function PublicLayout() {
     );
 }
 
+/**
+ * Defines the route map in one place.
+ * Keeping routing central makes layout boundaries and dashboard navigation easy to change without
+ * scattering route definitions through feature files.
+ */
 export default function App() {
     return (
         <Routes>

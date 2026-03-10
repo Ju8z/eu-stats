@@ -19,6 +19,10 @@ interface GeoBarChartProps {
     data: GeoStats;
 }
 
+/**
+ * Maps geographic analytics into a compact top-countries bar chart.
+ * Limiting the chart to the leading rows here keeps chart-specific slicing rules out of the page component.
+ */
 export function GeoBarChart({ data }: GeoBarChartProps) {
     const top = data.data.slice(0, 10);
     const chartData = {

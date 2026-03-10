@@ -6,6 +6,11 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Owns the database-side refresh of derived analytics tables.
+ * Keeping the upsert statements together makes scheduled aggregation idempotent and keeps
+ * PostgreSQL-specific conflict handling out of service code.
+ */
 @Repository
 public class PageViewAggregationRepository {
 	
@@ -160,6 +165,14 @@ public class PageViewAggregationRepository {
 		this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
 	}
 	
+	/**
+	 * Provides a cheap guard before heavier aggregation work.
+	 * The scheduled job uses this count to skip a full refresh when no recent raw page views could affect
+	 * derived tables.
+	 *
+	 * @param viewedSince lower viewed-at boundary
+	 * @return number of recent raw page views
+	 */
 	public long countRecentPageviews(OffsetDateTime viewedSince) {
 		Long count = namedParameterJdbcTemplate.queryForObject(
 				"SELECT COUNT(*) FROM pageviews WHERE viewed_at >= :viewedSince",
@@ -169,30 +182,86 @@ public class PageViewAggregationRepository {
 		return count == null ? 0L : count;
 	}
 	
+	/**
+	 * Refreshes daily statistics through an idempotent database upsert.
+	 * Conflict handling in PostgreSQL lets scheduled reruns rewrite the same summary rows instead of
+	 * creating duplicates when jobs overlap.
+	 *
+	 * @param viewedSince lower viewed-at boundary
+	 * @return number of rows affected by the refresh
+     */
     public int upsertDailyStats(OffsetDateTime viewedSince) {
         return update(DAILY_STATS_SQL, viewedSince);
-    }
-
+	}
+	
+	/**
+	 * Refreshes hourly statistics through an idempotent database upsert.
+	 * Conflict handling in PostgreSQL lets scheduled reruns rewrite the same summary rows instead of
+	 * creating duplicates when jobs overlap.
+	 *
+	 * @param viewedSince lower viewed-at boundary
+	 * @return number of rows affected by the refresh
+     */
     public int upsertHourlyStats(OffsetDateTime viewedSince) {
         return update(HOURLY_STATS_SQL, viewedSince);
-    }
-
+	}
+	
+	/**
+	 * Refreshes page statistics through an idempotent database upsert.
+	 * Conflict handling in PostgreSQL lets scheduled reruns rewrite the same summary rows instead of
+	 * creating duplicates when jobs overlap.
+	 *
+	 * @param viewedSince lower viewed-at boundary
+	 * @return number of rows affected by the refresh
+     */
     public int upsertPageStats(OffsetDateTime viewedSince) {
         return update(PAGE_STATS_SQL, viewedSince);
-    }
-
+	}
+	
+	/**
+	 * Refreshes referrer statistics through an idempotent database upsert.
+	 * Conflict handling in PostgreSQL lets scheduled reruns rewrite the same summary rows instead of
+	 * creating duplicates when jobs overlap.
+	 *
+	 * @param viewedSince lower viewed-at boundary
+	 * @return number of rows affected by the refresh
+     */
     public int upsertReferrerStats(OffsetDateTime viewedSince) {
         return update(REFERRER_STATS_SQL, viewedSince);
-    }
-
+	}
+	
+	/**
+	 * Refreshes geographic statistics through an idempotent database upsert.
+	 * Conflict handling in PostgreSQL lets scheduled reruns rewrite the same summary rows instead of
+	 * creating duplicates when jobs overlap.
+	 *
+	 * @param viewedSince lower viewed-at boundary
+	 * @return number of rows affected by the refresh
+     */
     public int upsertGeoStats(OffsetDateTime viewedSince) {
         return update(GEO_STATS_SQL, viewedSince);
-    }
-
+	}
+	
+	/**
+	 * Refreshes device statistics through an idempotent database upsert.
+	 * Conflict handling in PostgreSQL lets scheduled reruns rewrite the same summary rows instead of
+	 * creating duplicates when jobs overlap.
+	 *
+	 * @param viewedSince lower viewed-at boundary
+	 * @return number of rows affected by the refresh
+     */
     public int upsertDeviceStats(OffsetDateTime viewedSince) {
         return update(DEVICE_STATS_SQL, viewedSince);
-    }
-
+	}
+	
+	/**
+	 * Refreshes event statistics through an idempotent database upsert.
+	 * Conflict handling in PostgreSQL lets scheduled reruns rewrite the same summary rows instead of
+	 * creating duplicates when jobs overlap.
+	 *
+	 * @param viewedSince lower viewed-at boundary
+	 * @return number of rows affected by the refresh
+     */
     public int upsertEventStats(OffsetDateTime viewedSince) {
         return update(EVENT_STATS_SQL, viewedSince);
     }

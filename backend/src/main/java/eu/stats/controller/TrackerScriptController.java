@@ -15,14 +15,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Serves the lightweight tracker script.
+ * Serves the tracker script through the application itself.
+ * That keeps the delivered script aligned with server-side configuration and site validation instead of
+ * relying on handwritten embed snippets.
  */
 @RestController
 public class TrackerScriptController {
 	
 	/**
-	 * Returns the tracker JavaScript with cache-friendly headers.
-	 * Filename should be short written because of adblockers.
+	 * Keeps tracker delivery behind a site-aware endpoint.
+	 * Serving the script here lets the server validate the site and deliver the current tracker payload
+	 * without hard-coded client assumptions.
+	 *
+	 * @param siteId site identifier
+	 * @return tracker script response
 	 */
 	@GetMapping(value = "/s.js", produces = "application/javascript")
 	public ResponseEntity<String> statisticsJs(@RequestParam("id") Long siteId) throws IOException {

@@ -44,6 +44,11 @@ function toVisitorsInterval(period: string): string {
     return 'day';
 }
 
+/**
+ * Centralizes analytics polling and partial-refresh behavior for one site.
+ * The hook keeps dashboard pages from coordinating multiple endpoints and preserves the last successful
+ * section data when one request fails.
+ */
 export function useStats(siteId: number, period = '30d') {
     const [stats, setStats] = useState<SiteStatsBundle>(emptyBundle);
     const [isLoading, setIsLoading] = useState(true);
@@ -110,11 +115,6 @@ export function useStats(siteId: number, period = '30d') {
         }
     }, [siteId]);
 
-    const refresh = useCallback(async() => {
-        await refreshAll(false);
-        await refreshRealtime();
-    }, [refreshAll, refreshRealtime]);
-
     useEffect(() => {
         const showLoading = !hasLoadedRef.current;
         void refreshAll(showLoading);
@@ -134,5 +134,5 @@ export function useStats(siteId: number, period = '30d') {
         };
     }, [refreshAll, refreshRealtime]);
 
-    return { ...stats, isLoading, refresh };
+    return { ...stats, isLoading };
 }

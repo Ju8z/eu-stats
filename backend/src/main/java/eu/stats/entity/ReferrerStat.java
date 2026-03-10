@@ -9,6 +9,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * Keeps persistence mapping explicit for referrer statistics data.
+ * The project uses handwritten entities so stored fields and lifecycle behavior remain easy to audit
+ * without code generation.
+ */
 @Entity
 @Table(name = "referrer_stats")
 public class ReferrerStat {

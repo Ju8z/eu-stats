@@ -24,20 +24,22 @@ import eu.stats.repository.PageStatRepository;
 import eu.stats.repository.ReferrerStatRepository;
 import eu.stats.repository.projection.DeviceBreakdownProjection;
 import eu.stats.repository.projection.TopGeoProjection;
-import eu.stats.repository.projection.TopPageProjection;
-import eu.stats.repository.projection.TopReferrerProjection;
 import eu.stats.service.stats.AggregateSummaryReader;
 import eu.stats.service.stats.StatsQueryResolver;
 import eu.stats.service.stats.VisitorTimeSeriesService;
 import eu.stats.util.DateUtil;
 
+/**
+ * Centralizes dashboard read rules.
+ * It is the place where aggregated tables, live queries, fallback labels, and response shaping are kept
+ * consistent across dashboard endpoints.
+ */
 @Service
 public class StatsService {
 	
 	private static final String UNKNOWN_LABEL = "Unknown";
 	private static final String DIRECT_REFERRER = "(direct)";
 	private static final String EMPTY_VALUE = "";
-	private static final int OVERVIEW_TOP_LIMIT = 1;
 	private static final int TOP_BREAKDOWN_LIMIT = 20;
 	
 	private final StatsQueryResolver statsQueryResolver;
@@ -74,6 +76,17 @@ public class StatsService {
 		this.realTimeService = realTimeService;
 	}
 	
+	/**
+	 * Combines current and previous windows in one place.
+	 * That keeps comparison percentages and summary totals consistent across every overview card without
+	 * asking the frontend to coordinate multiple analytics calls.
+	 *
+	 * @param siteId site identifier
+	 * @param period reporting period
+	 * @param from   start date
+	 * @param to     end date
+	 * @return overview response for the requested site and window
+	 */
 	public OverviewStatsResponse overview(Long siteId, String period, LocalDate from, LocalDate to) {
 		DateUtil.DateRange range = statsQueryResolver.resolveRange(siteId, period, from, to);
 		DateUtil.DateRange previousRange = dateUtil.previous(range);
@@ -81,23 +94,26 @@ public class StatsService {
 		AggregateSummaryReader.SummaryTotals currentTotals = aggregateSummaryReader.readTotals(siteId, range);
 		AggregateSummaryReader.SummaryTotals previousTotals = aggregateSummaryReader.readTotals(siteId, previousRange);
 		
-		List<TopPageProjection> topPages = pageStatRepository.findTopPages(siteId, range.from(), range.to(), OVERVIEW_TOP_LIMIT);
-		List<TopReferrerProjection> topReferrers = referrerStatRepository.findTopReferrers(siteId, range.from(), range.to(),
-				OVERVIEW_TOP_LIMIT);
-		List<TopGeoProjection> topCountries = geoStatRepository.findTopCountries(siteId, range.from(), range.to());
-		
 		return new OverviewStatsResponse(
-				new OverviewStatsResponse.Period(range.from().toString(), range.to().toString()),
 				currentTotals.totalPageviews(),
 				currentTotals.uniqueVisitors(),
-				topPages.isEmpty() ? EMPTY_VALUE : topPages.getFirst().getPageUrl(),
-				topReferrers.isEmpty() ? EMPTY_VALUE : topReferrers.getFirst().getReferrer(),
-				topCountries.isEmpty() ? EMPTY_VALUE : topCountries.getFirst().getCountry(),
 				new OverviewStatsResponse.Comparison(
 						percentChange(currentTotals.totalPageviews(), previousTotals.totalPageviews()),
 						percentChange(currentTotals.uniqueVisitors(), previousTotals.uniqueVisitors())));
 	}
 	
+	/**
+	 * Chooses the cheapest accurate bucket strategy for visitor charts.
+	 * Special live windows stay on minute or rolling-hour data, while longer ranges move to aggregate tables
+	 * so the client does not need to understand storage details.
+	 *
+	 * @param siteId site identifier
+	 * @param period reporting period
+	 * @param from start date
+	 * @param to end date
+	 * @param interval requested interval
+	 * @return visitor time series response
+	 */
 	public VisitorTimeSeriesResponse visitors(Long siteId, String period, LocalDate from, LocalDate to, String interval) {
 		statsQueryResolver.validateSite(siteId);
 		
@@ -110,9 +126,22 @@ public class StatsService {
 		}
 		
 		DateUtil.DateRange range = statsQueryResolver.resolveRange(period, from, to);
+		
 		return visitorTimeSeriesService.getSeries(siteId, statsQueryResolver.resolveVisitorSeriesMode(interval, range), range);
 	}
 	
+	/**
+	 * Applies ranking limits and response shaping close to the read model.
+	 * Keeping the limit guard here prevents callers from triggering unbounded leaderboard queries and keeps
+	 * ranked page data consistent across endpoints.
+	 *
+	 * @param siteId site identifier
+	 * @param period reporting period
+	 * @param from start date
+	 * @param to end date
+	 * @param limit maximum number of rows to return
+	 * @return page ranking response
+	 */
 	public PageStatsResponse topPages(Long siteId, String period, LocalDate from, LocalDate to, int limit) {
 		DateUtil.DateRange range = statsQueryResolver.resolveRange(siteId, period, from, to);
 		int resolvedLimit = statsQueryResolver.resolveLimit(limit);
@@ -123,6 +152,18 @@ public class StatsService {
 		return new PageStatsResponse(data);
 	}
 	
+	/**
+	 * Normalizes raw referrer values before they leave the service.
+	 * Blank sources become direct traffic here so dashboard consumers do not need to understand
+	 * storage-specific null or empty-string conventions.
+	 *
+	 * @param siteId site identifier
+	 * @param period reporting period
+	 * @param from start date
+	 * @param to end date
+	 * @param limit maximum number of rows to return
+	 * @return referrer ranking response
+	 */
 	public ReferrerStatsResponse topReferrers(Long siteId, String period, LocalDate from, LocalDate to, int limit) {
 		DateUtil.DateRange range = statsQueryResolver.resolveRange(siteId, period, from, to);
 		int resolvedLimit = statsQueryResolver.resolveLimit(limit);
@@ -138,22 +179,40 @@ public class StatsService {
 		return new ReferrerStatsResponse(data);
 	}
 	
+	/**
+	 * Adds presentation-focused geography labels on the server side.
+	 * Country names are derived here so repository queries can stay storage-oriented while the frontend
+	 * receives the only fields it currently renders.
+	 *
+	 * @param siteId site identifier
+	 * @param period reporting period
+	 * @param from start date
+	 * @param to end date
+	 * @return geographic breakdown response
+	 */
 	public GeoStatsResponse geo(Long siteId, String period, LocalDate from, LocalDate to) {
 		DateUtil.DateRange range = statsQueryResolver.resolveRange(siteId, period, from, to);
 		List<TopGeoProjection> rows = geoStatRepository.findTopCountries(siteId, range.from(), range.to());
-		long totalVisits = rows.stream().mapToLong(TopGeoProjection::getVisits).sum();
 		List<GeoStatsResponse.Item> data = rows.stream()
 				.map(row -> new GeoStatsResponse.Item(
-						row.getCountry(),
 						countryName(row.getCountry()),
-						row.getVisits(),
-						row.getUniqueVisitors(),
-						percentage(row.getVisits(), totalVisits)))
+						row.getVisits()))
 				.toList();
 		
 		return new GeoStatsResponse(data);
 	}
 	
+	/**
+	 * Aggregates technical dimensions into the slices the dashboard actually renders.
+	 * Doing this on the server keeps grouping rules consistent and avoids returning unused browser and
+	 * percentage fields to the frontend.
+	 *
+	 * @param siteId site identifier
+	 * @param period reporting period
+	 * @param from start date
+	 * @param to end date
+	 * @return device breakdown response
+	 */
 	public DeviceStatsResponse devices(Long siteId, String period, LocalDate from, LocalDate to) {
 		DateUtil.DateRange range = statsQueryResolver.resolveRange(siteId, period, from, to);
 		List<DeviceBreakdownProjection> rows = deviceStatRepository.findBreakdown(siteId, range.from(), range.to());
@@ -161,6 +220,17 @@ public class StatsService {
 		return buildDeviceStatsResponse(rows);
 	}
 	
+	/**
+	 * Keeps event reporting isolated from page view reporting.
+	 * That separation preserves flexibility for custom event names while reusing the same date-range rules as
+	 * other analytics reads.
+	 *
+	 * @param siteId site identifier
+	 * @param period reporting period
+	 * @param from start date
+	 * @param to end date
+	 * @return event breakdown response
+	 */
 	public EventStatsResponse events(Long siteId, String period, LocalDate from, LocalDate to) {
 		DateUtil.DateRange range = statsQueryResolver.resolveRange(siteId, period, from, to);
 		List<EventStatsResponse.Item> data = eventStatRepository.findEvents(siteId, range.from(), range.to()).stream()
@@ -170,6 +240,14 @@ public class StatsService {
 		return new EventStatsResponse(data);
 	}
 	
+	/**
+	 * Validates the site before running live queries.
+	 * Failing early avoids wasting work on heartbeat queries for missing sites and keeps the live endpoint
+	 * consistent with the rest of the application.
+	 *
+	 * @param siteId site identifier
+	 * @return real-time response
+	 */
 	public RealTimeResponse realtime(Long siteId) {
 		statsQueryResolver.validateSite(siteId);
 		
@@ -177,18 +255,12 @@ public class StatsService {
 	}
 	
 	private DeviceStatsResponse buildDeviceStatsResponse(List<DeviceBreakdownProjection> rows) {
-		long totalVisits = rows.stream().mapToLong(this::visits).sum();
 		Map<String, Long> visitsByDeviceType = new HashMap<>();
-		Map<TechnologyKey, Long> visitsByBrowser = new HashMap<>();
 		Map<TechnologyKey, Long> visitsByOperatingSystem = new HashMap<>();
 		
 		for (DeviceBreakdownProjection row : rows) {
 			long visits = visits(row);
 			visitsByDeviceType.merge(defaultString(row.getDeviceType(), UNKNOWN_LABEL), visits, Long::sum);
-			visitsByBrowser.merge(
-					new TechnologyKey(defaultString(row.getBrowser(), UNKNOWN_LABEL), defaultString(row.getBrowserVersion(), EMPTY_VALUE)),
-					visits,
-					Long::sum);
 			visitsByOperatingSystem.merge(
 					new TechnologyKey(defaultString(row.getOs(), UNKNOWN_LABEL), defaultString(row.getOsVersion(), EMPTY_VALUE)),
 					visits,
@@ -196,30 +268,27 @@ public class StatsService {
 		}
 		
 		return new DeviceStatsResponse(
-				toDeviceItems(visitsByDeviceType, totalVisits),
-				toTechItems(visitsByBrowser, totalVisits),
-				toTechItems(visitsByOperatingSystem, totalVisits));
+				toDeviceItems(visitsByDeviceType),
+				toTechItems(visitsByOperatingSystem));
 	}
 	
-	private List<DeviceStatsResponse.DeviceItem> toDeviceItems(Map<String, Long> visitsByDeviceType, long totalVisits) {
+	private List<DeviceStatsResponse.DeviceItem> toDeviceItems(Map<String, Long> visitsByDeviceType) {
 		return visitsByDeviceType.entrySet().stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
 				.map(entry -> new DeviceStatsResponse.DeviceItem(
 						entry.getKey(),
-						entry.getValue(),
-						percentage(entry.getValue(), totalVisits)))
+						entry.getValue()))
 				.toList();
 	}
 	
-	private List<DeviceStatsResponse.TechItem> toTechItems(Map<TechnologyKey, Long> visitsByTechnology, long totalVisits) {
+	private List<DeviceStatsResponse.TechItem> toTechItems(Map<TechnologyKey, Long> visitsByTechnology) {
 		return visitsByTechnology.entrySet().stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
 				.limit(TOP_BREAKDOWN_LIMIT)
 				.map(entry -> new DeviceStatsResponse.TechItem(
 						entry.getKey().name(),
 						entry.getKey().version(),
-						entry.getValue(),
-						percentage(entry.getValue(), totalVisits)))
+						entry.getValue()))
 				.toList();
 	}
 	
@@ -240,14 +309,6 @@ public class StatsService {
 		String name = locale.getDisplayCountry(Locale.ENGLISH);
 		
 		return name.isBlank() ? countryCode : name;
-	}
-	
-	private double percentage(long part, long total) {
-		if (total <= 0L) {
-			return 0.0;
-		}
-		
-		return Math.round(((double) part / total) * 1000.0) / 10.0;
 	}
 	
 	private double percentChange(double current, double previous) {

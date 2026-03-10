@@ -5,6 +5,10 @@ interface DateRangePickerProps {
     onChange: (value: string) => void;
 }
 
+/**
+ * Restricts analytics filtering to the periods the backend supports.
+ * Centralizing the picker prevents screens from inventing unsupported range values or label variants.
+ */
 export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
     return (
         <select

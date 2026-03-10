@@ -11,8 +11,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Allows cross-origin requests from your frontend to the backend API (browsers block these by default)
- * Without it, frontend or tracker script would get blocked by the browser with a CORS error whenever it call the backend
+ * Keeps cross-origin access rules close to configuration.
+ * Centralizing origin handling avoids scattering deployment-specific access rules across controllers.
  */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
@@ -23,6 +23,13 @@ public class CorsConfig implements WebMvcConfigurer {
 		this.appProperties = appProperties;
 	}
 	
+	/**
+	 * Applies origin rules from configuration instead of controllers.
+	 * Keeping cross-origin handling here makes deployment-specific access changes a configuration concern
+	 * rather than an endpoint concern.
+	 *
+	 * @param registry cross-origin resource sharing registry
+	 */
 	@Override
 	public void addCorsMappings(@NonNull CorsRegistry registry) {
 		registry.addMapping("/**")

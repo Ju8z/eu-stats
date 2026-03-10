@@ -6,35 +6,26 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /**
- * Utility component for classifying referrer sources.
- * <p>
- * Provides methods to normalize referrer URLs and classify them into categories:
- * search engines, social media platforms, direct, and other sources.
- * Used primarily for analytics tracking to understand traffic sources.
+ * Collapses inbound referrers into stable reporting categories.
+ * That keeps traffic source charts readable and prevents small host variations from fragmenting the same
+ * source across multiple buckets.
  */
 @Component
 public class ReferrerClassifier {
 	
-	/**
-	 * Set of common search engine domains for referrer classification.
-	 */
 	private static final Set<String> SEARCH_DOMAINS = Set.of(
 			"google.com", "bing.com", "duckduckgo.com", "yahoo.com", "yandex.com", "baidu.com");
 	
-	/**
-	 * Set of common social media domains for referrer classification.
-	 */
 	private static final Set<String> SOCIAL_DOMAINS = Set.of(
 			"twitter.com", "x.com", "facebook.com", "instagram.com", "linkedin.com", "reddit.com", "t.co");
 	
 	/**
-	 * Normalizes a referrer URL by extracting and cleaning the domain.
-	 * <p>
-	 * Removes the www prefix and converts to lowercase. Returns an empty string
-	 * if the referrer is null, blank, or invalid.
+	 * Normalizes host names before aggregation.
+	 * Collapsing protocol and common subdomain differences here prevents the same source from splitting across
+	 * multiple report buckets.
 	 *
-	 * @param referrer the referrer URL to normalize
-	 * @return the normalized domain without www prefix, or empty string if invalid
+	 * @param referrer referrer
+	 * @return normalized referrer domain
 	 */
 	public String normalizeDomain(String referrer) {
 		if (referrer == null || referrer.isBlank()) {
@@ -55,14 +46,12 @@ public class ReferrerClassifier {
 	}
 	
 	/**
-	 * Classifies a referrer into one of four categories.
-	 * <p>
-	 * Categories are determined by checking the normalized domain against known
-	 * search engine and social media domains. Falls back to "direct" for blank
-	 * referrers and "other" for unmatched domains.
+	 * Maps many external domains into a small reporting vocabulary.
+	 * Keeping this classification stable makes source charts readable over time even as inbound referrer hosts
+	 * vary in detail.
 	 *
-	 * @param referrer the referrer URL to classify
-	 * @return classification category: "search", "social", "direct", or "other"
+	 * @param referrer referrer
+	 * @return stable referrer category
 	 */
 	public String classify(String referrer) {
 		String domain = normalizeDomain(referrer);

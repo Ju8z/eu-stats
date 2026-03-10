@@ -16,6 +16,10 @@ interface OperatingSystemPieChartProps {
     data: DeviceStats;
 }
 
+/**
+ * Adapts operating-system analytics to the shared pie chart input.
+ * The wrapper owns label formatting so the generic chart can stay unaware of versioning rules.
+ */
 export function OperatingSystemPieChart({ data }: OperatingSystemPieChartProps) {
     return (
         <PieChart

@@ -4,6 +4,10 @@ interface MetricCardProps {
     change?: number;
 }
 
+/**
+ * Encapsulates the repeated headline metric pattern.
+ * A shared card keeps trend coloring and spacing rules consistent across the top-level dashboard summary.
+ */
 export function MetricCard({ title, value, change }: MetricCardProps) {
     return (
         <article className="rounded-lg border border-zinc-200 bg-white p-3">

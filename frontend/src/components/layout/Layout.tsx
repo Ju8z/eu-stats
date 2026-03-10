@@ -5,6 +5,11 @@ interface LayoutProps {
     children: ReactNode;
 }
 
+/**
+ * Defines the shared page chrome for routed screens.
+ * Centralizing header, footer, and spacing keeps feature pages focused on content instead of repeating the
+ * application shell.
+ */
 export function Layout({ children }: LayoutProps) {
     return (
         <div className="min-h-screen bg-zinc-50 text-zinc-900">

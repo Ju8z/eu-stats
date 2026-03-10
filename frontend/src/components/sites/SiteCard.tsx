@@ -6,6 +6,10 @@ interface SiteCardProps {
     site: Site;
 }
 
+/**
+ * Condenses a site summary into a reusable dashboard card.
+ * The card keeps navigation and thirty-day metrics together so the site list stays simple and scannable.
+ */
 export function SiteCard({ site }: SiteCardProps) {
     return (
         <Link

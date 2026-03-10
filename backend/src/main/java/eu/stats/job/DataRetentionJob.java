@@ -13,11 +13,9 @@ import eu.stats.config.AppProperties;
 import eu.stats.repository.PageViewRepository;
 
 /**
- * Keeps the raw pageview table under control by removing data that is older
- * than the configured retention window. Default 24 Months and can be changed in .env
- * <p>
- * The application keeps long-term reporting data in aggregate tables, so this
- * job exists to stop detailed visit rows from growing forever.
+ * Enforces raw event retention without touching dashboard aggregates.
+ * Running retention separately keeps privacy-related cleanup explicit and lets the cutoff change through
+ * configuration rather than code edits.
  */
 @Component
 public class DataRetentionJob {
@@ -35,7 +33,9 @@ public class DataRetentionJob {
 	}
 	
 	/**
-	 * Runs once a day at 00:01 and deletes raw pageviews that have aged past the configured retention period.
+	 * Deletes raw events beyond the configured retention window.
+	 * Calculating the cutoff at runtime keeps privacy retention adjustable through configuration instead of
+	 * code changes.
 	 */
 	@Transactional
 	@Scheduled(cron = "0 1 0 * * *")

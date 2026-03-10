@@ -2,6 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { sitesApi } from '@/api/sitesApi';
 import type { Site } from '@/types/site';
 
+/**
+ * Centralizes site-list loading and retry behavior.
+ * The hook keeps loading state, failure messages, and refresh policy out of page components so the
+ * dashboard view stays mostly declarative.
+ */
 export function useSites() {
     const [sites, setSites] = useState<Site[]>([]);
     const [isLoading, setIsLoading] = useState(true);

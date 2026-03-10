@@ -10,6 +10,11 @@ import eu.stats.config.AppProperties;
 import eu.stats.dto.response.RealTimeResponse;
 import eu.stats.repository.PageViewRepository;
 
+/**
+ * Builds the live dashboard view from heartbeat data.
+ * The service keeps live-window rules on the server so active visitor counts and active page counts
+ * continue to describe the same population.
+ */
 @Service
 public class RealTimeService {
 	
@@ -23,6 +28,14 @@ public class RealTimeService {
 		this.clock = clock;
 	}
 	
+	/**
+	 * Builds live metrics from heartbeat data rather than historical aggregates.
+	 * The service applies the same live window to active visitors and active pages so both numbers describe
+	 * the same active population.
+	 *
+	 * @param siteId site identifier
+	 * @return real-time response
+	 */
 	public RealTimeResponse getRealtime(Long siteId) {
 		// The configured live window acts as a heartbeat timeout: if a tab stops
 		// sending heartbeats for longer than this window, it is no longer treated
@@ -34,6 +47,6 @@ public class RealTimeService {
 				.map(row -> new RealTimeResponse.PageItem(row.getPageUrl(), row.getVisitors() == null ? 0L : row.getVisitors()))
 				.toList();
 		
-		return new RealTimeResponse(activeVisitors == null ? 0L : activeVisitors, windowMinutes, pages);
+		return new RealTimeResponse(activeVisitors == null ? 0L : activeVisitors, pages);
 	}
 }

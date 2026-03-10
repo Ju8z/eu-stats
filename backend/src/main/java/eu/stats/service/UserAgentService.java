@@ -5,6 +5,11 @@ import org.springframework.stereotype.Service;
 import ua_parser.Client;
 import ua_parser.Parser;
 
+/**
+ * Normalizes user agent strings into stable analytics labels.
+ * Wrapping the parser library here keeps parser failures and default labeling decisions out of the rest of
+ * the analytics code.
+ */
 @Service
 public class UserAgentService {
 	
@@ -19,6 +24,13 @@ public class UserAgentService {
 	
 	private final Parser parser = new Parser();
 	
+	/**
+	 * Normalizes parser output into the small label set used by analytics.
+	 * Fallback defaults keep reports stable even when uncommon user agents cannot be classified cleanly.
+	 *
+	 * @param userAgent user agent string
+	 * @return normalized user agent details
+	 */
 	public UserAgentDetails parse(String userAgent) {
 		try {
 			Client client = parser.parse(userAgent);
@@ -58,6 +70,17 @@ public class UserAgentService {
 		return major == null ? EMPTY : major;
 	}
 	
+	/**
+	 * Bundles related values that should travel together.
+	 * Keeping this nested record inside user agent service prevents closely related analytics values from
+	 * drifting apart as separate arguments or map entries.
+	 *
+	 * @param browser browser name
+	 * @param browserVersion browser version
+	 * @param os operating system name
+	 * @param osVersion operating system version
+	 * @param deviceType device type
+	 */
 	public record UserAgentDetails(String browser, String browserVersion, String os, String osVersion, String deviceType) {
 	}
 }

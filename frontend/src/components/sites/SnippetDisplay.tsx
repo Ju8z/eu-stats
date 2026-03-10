@@ -4,6 +4,11 @@ interface SnippetDisplayProps {
     snippetHtml: string;
 }
 
+/**
+ * Keeps installation instructions and copy behavior together.
+ * Rendering snippets through one component prevents formatting and clipboard affordances from drifting
+ * between creation and settings flows.
+ */
 export function SnippetDisplay({ snippetHtml }: SnippetDisplayProps) {
     return (
         <section className="max-w-lg rounded-lg border border-zinc-200 bg-white p-4">

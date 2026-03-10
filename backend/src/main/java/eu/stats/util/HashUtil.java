@@ -6,9 +6,22 @@ import java.security.NoSuchAlgorithmException;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * Keeps hashing behavior consistent in one small boundary.
+ * Centralizing digest generation avoids subtle formatting differences in privacy-sensitive code paths such
+ * as visitor hashing and cache keys.
+ */
 @Component
 public class HashUtil {
 	
+	/**
+	 * Keeps hashing consistent for privacy-related workflows.
+	 * Using one helper avoids subtle differences in digest formatting between visitor hashing and other
+	 * privacy-sensitive lookups.
+	 *
+	 * @param value input value
+	 * @return hexadecimal Secure Hash Algorithm 256 digest
+	 */
 	public String sha256Hex(String value) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
