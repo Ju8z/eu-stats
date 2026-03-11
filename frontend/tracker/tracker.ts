@@ -2,10 +2,11 @@
     // Self-executing wrapper (IIFE):
     // The function is created and immediately invoked by the trailing `();`.
     // This means tracking bootstraps as soon as the script file is loaded by the browser.
-    type TrackerEventType = 'pageview' | 'event' | 'heartbeat';
+    type TrackerEventType = 'pageview' | 'event' | 'heartbeat' | 'heartbeat_end';
     // A visible tab sends heartbeats on this cadence so the backend can infer
     // "currently active" without a dedicated presence table.
     const HEARTBEAT_EVENT_TYPE: TrackerEventType = 'heartbeat';
+    const HEARTBEAT_END_EVENT_TYPE: TrackerEventType = 'heartbeat_end';
     const HEARTBEAT_INTERVAL_MILLIS = 5000;
     const TAB_ID_STORAGE_KEY = 'eu_stats_tab_id';
 
@@ -161,6 +162,13 @@
             postPayload(buildPayload(HEARTBEAT_EVENT_TYPE, currentTabId));
         }
 
+        // Marks the current tab as inactive as soon as the browser hides or
+        // closes it. This keeps live widgets from showing ghost tabs for the
+        // full timeout window when the browser shuts down cleanly.
+        function sendHeartbeatEnd(): void {
+            postPayload(buildPayload(HEARTBEAT_END_EVENT_TYPE, currentTabId));
+        }
+
         // Visibility changes and page unloads both funnel through here so we do
         // not keep sending presence signals after the tab stops being active.
         function stopHeartbeat(): void {
@@ -256,8 +264,19 @@
         instrumentHistoryNavigation();
         trackerWindow.addEventListener('popstate', trackPageview, { passive: true });
         trackerWindow.addEventListener('click', trackLinkClick, { capture: true, passive: true });
-        trackerDocument.addEventListener('visibilitychange', startHeartbeat, { passive: true });
-        trackerWindow.addEventListener('pagehide', stopHeartbeat, { passive: true });
+        trackerDocument.addEventListener('visibilitychange', () => {
+            if (trackerDocument.visibilityState === 'hidden') {
+                stopHeartbeat();
+                sendHeartbeatEnd();
+                return;
+            }
+
+            startHeartbeat();
+        }, { passive: true });
+        trackerWindow.addEventListener('pagehide', () => {
+            stopHeartbeat();
+            sendHeartbeatEnd();
+        }, { passive: true });
         trackPageview();
     } catch {
         // Never break the host page because of analytics.

@@ -117,7 +117,19 @@ public class CollectionService {
 		try {
 			URI uri = URI.create(url);
 			String path = uri.getPath();
-			return path == null || path.isBlank() ? "/" : path;
+			if (path == null || path.isBlank()) {
+				return "/";
+			}
+			
+			if ("file".equalsIgnoreCase(uri.getScheme())) {
+				String normalizedPath = path.replace('\\', '/');
+				int demoSegmentIndex = normalizedPath.lastIndexOf("/demo/");
+				if (demoSegmentIndex >= 0) {
+					return normalizedPath.substring(demoSegmentIndex);
+				}
+			}
+			
+			return path;
 		} catch (Exception ex) {
 			return "/";
 		}

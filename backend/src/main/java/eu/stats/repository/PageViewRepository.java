@@ -148,13 +148,64 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 	 * @return number of active visitors in the live window
 	 */
 	@Query(value = """
+			WITH last_signal AS (
+			  SELECT
+			    visitor_hash,
+			    ROW_NUMBER() OVER (
+			      PARTITION BY COALESCE(NULLIF(event_name, ''), 'visitor:' || visitor_hash)
+			      ORDER BY COALESCE(created_at, viewed_at) DESC, id DESC
+			    ) AS rn,
+			    event_type
+			  FROM pageviews
+			  WHERE site_id = :siteId
+			    AND event_type IN ('heartbeat', 'heartbeat_end')
+			    AND COALESCE(created_at, viewed_at) >= :fromTs
+			    AND (
+			      (event_name IS NOT NULL AND event_name <> '')
+			      OR visitor_hash IS NOT NULL
+			    )
+			)
 			SELECT COUNT(DISTINCT visitor_hash)::bigint
-			FROM pageviews
-			WHERE site_id = :siteId
+			FROM last_signal
+			WHERE rn = 1
 			  AND event_type = 'heartbeat'
-			  AND COALESCE(created_at, viewed_at) >= :fromTs
+			  AND visitor_hash IS NOT NULL
 			""", nativeQuery = true)
 	Long countDistinctVisitorsByIngestedSince(@Param("siteId") Long siteId,
+			@Param("fromTs") OffsetDateTime fromTs);
+	
+	/**
+	 * Counts active tabs from heartbeat event names.
+	 * The tracker sends a stable per-tab identifier in event_name so live views can distinguish multiple open
+	 * tabs from one visitor hash.
+	 *
+	 * @param siteId site identifier
+	 * @param fromTs start timestamp
+	 * @return number of active tabs in the live window
+	 */
+	@Query(value = """
+			WITH last_signal AS (
+			  SELECT
+			    ROW_NUMBER() OVER (
+			      PARTITION BY COALESCE(NULLIF(event_name, ''), 'visitor:' || visitor_hash)
+			      ORDER BY COALESCE(created_at, viewed_at) DESC, id DESC
+			    ) AS rn,
+			    event_type
+			  FROM pageviews
+			  WHERE site_id = :siteId
+			    AND event_type IN ('heartbeat', 'heartbeat_end')
+			    AND COALESCE(created_at, viewed_at) >= :fromTs
+			    AND (
+			      (event_name IS NOT NULL AND event_name <> '')
+			      OR visitor_hash IS NOT NULL
+			    )
+			)
+			SELECT COUNT(*)::bigint
+			FROM last_signal
+			WHERE rn = 1
+			  AND event_type = 'heartbeat'
+			""", nativeQuery = true)
+	Long countDistinctActiveTabsByIngestedSince(@Param("siteId") Long siteId,
 			@Param("fromTs") OffsetDateTime fromTs);
 	
 	// Keep only the latest heartbeat per visitor in the live window, then group
@@ -174,25 +225,30 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
 	@Query(value = """
 			WITH last_seen AS (
 			  SELECT
-			    visitor_hash,
+			    COALESCE(NULLIF(event_name, ''), 'visitor:' || visitor_hash) AS active_key,
 			    page_url,
+			    event_type,
 			    ROW_NUMBER() OVER (
-			      PARTITION BY visitor_hash
+			      PARTITION BY COALESCE(NULLIF(event_name, ''), 'visitor:' || visitor_hash)
 			      ORDER BY COALESCE(created_at, viewed_at) DESC, id DESC
 			    ) AS rn
 			  FROM pageviews
 			  WHERE site_id = :siteId
-			    AND event_type = 'heartbeat'
-			    AND visitor_hash IS NOT NULL
+			    AND event_type IN ('heartbeat', 'heartbeat_end')
 			    AND COALESCE(created_at, viewed_at) >= :fromTs
+			    AND (
+			      (event_name IS NOT NULL AND event_name <> '')
+			      OR visitor_hash IS NOT NULL
+			    )
 			)
 			SELECT
 			  page_url AS pageUrl,
-			  COUNT(*)::bigint AS visitors
+			  COUNT(*)::bigint AS activeTabs
 			FROM last_seen
 			WHERE rn = 1
+			  AND event_type = 'heartbeat'
 			GROUP BY page_url
-			ORDER BY visitors DESC, page_url ASC
+			ORDER BY activeTabs DESC, page_url ASC
 			""", nativeQuery = true)
 	List<LivePageProjection> findTopActivePagesByIngestedSince(@Param("siteId") Long siteId,
 			@Param("fromTs") OffsetDateTime fromTs,

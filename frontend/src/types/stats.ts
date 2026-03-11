@@ -95,5 +95,6 @@ export interface EventStats {
  */
 export interface RealTimeStats {
     activeVisitors: number;
-    topActivePages: Array<{ url: string; visitors: number }>;
+    activeTabs?: number;
+    topActivePages: Array<{ url: string; visitors?: number; activeTabs?: number }>;
 }

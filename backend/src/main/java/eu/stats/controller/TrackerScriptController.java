@@ -2,7 +2,6 @@ package eu.stats.controller;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.CacheControl;
@@ -35,11 +34,10 @@ public class TrackerScriptController {
 		// Site ID is validated client-side in script and server-side on /api/p. So im just forcing siteId= to be set :)
 		ClassPathResource resource = new ClassPathResource("static/tracker.js");
 		String body = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
-		Duration cacheAge = Duration.ofDays(1);
 		
 		return ResponseEntity.ok()
 				.contentType(MediaType.valueOf("application/javascript"))
-				.cacheControl(CacheControl.maxAge(cacheAge).cachePublic())
+				.cacheControl(CacheControl.noStore().mustRevalidate())
 				.header(HttpHeaders.VARY, "Accept-Encoding")
 				.body(body);
 	}

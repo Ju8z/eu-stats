@@ -40,13 +40,17 @@ public class RealTimeService {
 		// The configured live window acts as a heartbeat timeout: if a tab stops
 		// sending heartbeats for longer than this window, it is no longer treated
 		// as currently active.
-		int windowMinutes = Math.max(5, appProperties.getRealtimeWindowMinutes());
+		int windowMinutes = Math.max(1, appProperties.getRealtimeWindowMinutes());
 		OffsetDateTime fromTs = OffsetDateTime.now(clock).minusMinutes(windowMinutes);
 		Long activeVisitors = pageViewRepository.countDistinctVisitorsByIngestedSince(siteId, fromTs);
+		Long activeTabs = pageViewRepository.countDistinctActiveTabsByIngestedSince(siteId, fromTs);
 		List<RealTimeResponse.PageItem> pages = pageViewRepository.findTopActivePagesByIngestedSince(siteId, fromTs, 10).stream()
-				.map(row -> new RealTimeResponse.PageItem(row.getPageUrl(), row.getVisitors() == null ? 0L : row.getVisitors()))
+				.map(row -> new RealTimeResponse.PageItem(row.getPageUrl(), row.getActiveTabs() == null ? 0L : row.getActiveTabs()))
 				.toList();
 		
-		return new RealTimeResponse(activeVisitors == null ? 0L : activeVisitors, pages);
+		return new RealTimeResponse(
+				activeVisitors == null ? 0L : activeVisitors,
+				activeTabs == null ? 0L : activeTabs,
+				pages);
 	}
 }

@@ -8,11 +8,13 @@ import java.util.List;
  * payloads and frontend expectations.
  *
  * @param activeVisitors active visitors
+ * @param activeTabs active tabs
  * @param topActivePages top active pages
  */
 public record RealTimeResponse(
 		
 		long activeVisitors,
+		long activeTabs,
 		List<PageItem> topActivePages
 
 ) {
@@ -23,12 +25,12 @@ public record RealTimeResponse(
 	 * drifting apart as separate arguments or map entries.
 	 *
 	 * @param url      page address
-	 * @param visitors visitors
+	 * @param activeTabs active tabs
 	 */
 	public record PageItem(
 			
 			String url,
-			long visitors
+			long activeTabs
 	
 	) {
 	}

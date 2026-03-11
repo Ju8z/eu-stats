@@ -16,12 +16,12 @@ public interface LivePageProjection {
 	String getPageUrl();
 	
 	/**
-	 * Keeps visitors available without hydrating a full entity.
+	 * Keeps active-tab counts available without hydrating a full entity.
 	 * Narrow projections make aggregate queries cheaper and reduce accidental coupling to the underlying
 	 * entity shape.
 	 *
-	 * @return projected visitors
+	 * @return projected active-tab count
 	 */
-	Long getVisitors();
+	Long getActiveTabs();
 	
 }
