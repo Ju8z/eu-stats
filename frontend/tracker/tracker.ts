@@ -162,15 +162,15 @@
             postPayload(buildPayload(HEARTBEAT_EVENT_TYPE, currentTabId));
         }
 
-        // Marks the current tab as inactive as soon as the browser hides or
-        // closes it. This keeps live widgets from showing ghost tabs for the
-        // full timeout window when the browser shuts down cleanly.
+        // Marks the current tab as inactive when the page is unloading.
+        // Background tabs should still count as open tabs, so we only emit the
+        // end signal when the tab is actually leaving the page.
         function sendHeartbeatEnd(): void {
             postPayload(buildPayload(HEARTBEAT_END_EVENT_TYPE, currentTabId));
         }
 
-        // Visibility changes and page unloads both funnel through here so we do
-        // not keep sending presence signals after the tab stops being active.
+        // Page unloads funnel through here so we do not keep sending presence
+        // signals after the tab is actually gone.
         function stopHeartbeat(): void {
             if (heartbeatState.intervalId == null) {
                 return;
@@ -183,7 +183,7 @@
         // Starts presence reporting only while the document is visible and
         // avoids stacking multiple intervals for the same tab.
         function startHeartbeat(): void {
-            if (trackerDocument.visibilityState === 'hidden') {
+            if (trackerDocument.visibilityState === 'hidden' && heartbeatState.intervalId == null) {
                 stopHeartbeat();
                 return;
             }
@@ -264,15 +264,7 @@
         instrumentHistoryNavigation();
         trackerWindow.addEventListener('popstate', trackPageview, { passive: true });
         trackerWindow.addEventListener('click', trackLinkClick, { capture: true, passive: true });
-        trackerDocument.addEventListener('visibilitychange', () => {
-            if (trackerDocument.visibilityState === 'hidden') {
-                stopHeartbeat();
-                sendHeartbeatEnd();
-                return;
-            }
-
-            startHeartbeat();
-        }, { passive: true });
+        trackerDocument.addEventListener('visibilitychange', startHeartbeat, { passive: true });
         trackerWindow.addEventListener('pagehide', () => {
             stopHeartbeat();
             sendHeartbeatEnd();
