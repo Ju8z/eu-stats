@@ -67,7 +67,7 @@
                 <directory>src/main/resources</directory>
             </resource>
             <resource>
-                <directory>../frontend/public/demo</directory>
+                <directory>../demo</directory>
                 <targetPath>static/demo</targetPath>
             </resource>
         </resources>

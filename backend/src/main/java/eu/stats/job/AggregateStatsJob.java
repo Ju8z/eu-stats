@@ -58,10 +58,25 @@ public class AggregateStatsJob {
 		logStep("event_stats", pageViewAggregationRepository.upsertEventStats(viewedSince));
 	}
 	
+	/**
+	 * Replays a safety window instead of trusting the scheduler cadence exactly.
+	 * That makes late tracker deliveries harmless because the next run still revisits the rows that could have
+	 * changed.
+	 *
+	 * @return duration to rescan on each aggregation pass
+	 */
 	private Duration lookbackWindow() {
 		return Duration.ofDays(Math.max(1, appProperties.getAggregationLookbackDays()));
 	}
 	
+	/**
+	 * Keeps per-table refresh logging uniform.
+	 * Consistent messages make it easier to spot which aggregate table stalled or started producing unusual
+	 * row counts.
+	 *
+	 * @param tableName aggregate table being refreshed
+	 * @param affectedRows rows touched by the upsert
+	 */
 	private void logStep(String tableName, int affectedRows) {
 		log.info("AggregateStatsJob upserted {} rows into {}", affectedRows, tableName);
 	}

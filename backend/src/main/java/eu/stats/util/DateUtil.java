@@ -60,7 +60,7 @@ public class DateUtil {
 	 * Using an equal-length previous range keeps percentage comparisons grounded in periods of the same
 	 * size.
 	 *
-	 * @param current current
+	 * @param current current reporting window
 	 * @return previous date range with the same length
 	 */
     public DateRange previous(DateRange current) {
@@ -116,9 +116,8 @@ public class DateUtil {
 	}
 	
 	/**
-	 * Bundles related values that should travel together.
-	 * Keeping this nested record inside date helper prevents closely related analytics values from drifting
-	 * apart as separate arguments or map entries.
+	 * Keeps date boundaries travelling through query resolution as one explicit value.
+	 * Using a record here makes it harder for start and end dates to drift apart across callers.
 	 *
 	 * @param from start date
 	 * @param to end date
@@ -127,9 +126,8 @@ public class DateUtil {
 	}
 	
 	/**
-	 * Bundles related values that should travel together.
-	 * Keeping this nested record inside date helper prevents closely related analytics values from drifting
-	 * apart as separate arguments or map entries.
+	 * Keeps inclusive and exclusive timestamp bounds paired once date-only windows are expanded.
+	 * That protects range queries from accidentally mixing incompatible boundary conventions.
 	 *
 	 * @param fromInclusive inclusive start timestamp
 	 * @param toExclusive exclusive end timestamp

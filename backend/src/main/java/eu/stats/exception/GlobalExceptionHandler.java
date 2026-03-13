@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
 	 * The dedicated handler keeps a common domain failure predictable for clients without forcing controllers
 	 * to know HTTP status details.
 	 *
-	 * @param ex      ex
+	 * @param ex      missing-site failure raised by the domain layer
 	 * @param request incoming servlet request
 	 * @return error response for the missing-site case
 	 */
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
 	 * Maps guard-clause failures to a client error response.
 	 * That keeps invalid request parameters from surfacing as generic server errors.
 	 *
-	 * @param ex ex
+	 * @param ex invalid-input failure raised by validation or guard clauses
 	 * @param request incoming servlet request
 	 * @return error response for invalid input
 	 */
@@ -57,14 +57,12 @@ public class GlobalExceptionHandler {
 		return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage(), request.getRequestURI());
 	}
 	
-	// Just a typical 404
-	
 	/**
-	 * Normalizes missing routes into the shared error envelope.
-	 * Clients do not need to special-case framework-generated not-found responses because the same payload
-	 * shape is used here.
+	 * Normalizes framework-generated 404 responses into the shared error envelope.
+	 * Clients do not need to special-case missing routes because the same payload shape is used for domain
+	 * and framework not-found cases.
 	 *
-	 * @param ex ex
+	 * @param ex missing-resource signal raised by Spring
 	 * @param request incoming servlet request
 	 * @return error response for a missing resource
 	 */
@@ -77,7 +75,7 @@ public class GlobalExceptionHandler {
 	 * Provides a final fallback for uncaught failures.
 	 * The handler keeps error bodies consistent even when the root cause was not anticipated explicitly.
 	 *
-	 * @param ex ex
+	 * @param ex unexpected failure that escaped more specific handlers
 	 * @param request incoming servlet request
 	 * @return error response for an unexpected failure
 	 */
@@ -87,6 +85,16 @@ public class GlobalExceptionHandler {
 		return build(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error", request.getRequestURI());
 	}
 	
+	/**
+	 * Centralizes envelope creation so every handler stamps errors the same way.
+	 * Sharing this path keeps timestamps, codes, and payload shape aligned across unrelated failure modes.
+	 *
+	 * @param status  HTTP status that matches the failure category
+	 * @param code    stable client-facing error code
+	 * @param message human-readable error message
+	 * @param path    request path that triggered the failure
+	 * @return response entity with the shared error envelope
+	 */
 	private ResponseEntity<ErrorResponse> build(HttpStatus status, String code, String message, String path) {
 		return ResponseEntity.status(status)
 				.body(new ErrorResponse(code, message, OffsetDateTime.now(clock), path));

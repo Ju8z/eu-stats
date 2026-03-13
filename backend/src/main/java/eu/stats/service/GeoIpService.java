@@ -65,13 +65,20 @@ public class GeoIpService {
 		}
 	}
 	
+	/**
+	 * Keeps cached lookup data and its expiry bound together.
+	 * Storing both values in one record makes it harder for future cache changes to reuse stale location
+	 * data by accident.
+	 *
+	 * @param value     cached lookup result
+	 * @param expiresAt instant after which the cache entry must be ignored
+	 */
 	private record CacheEntry(GeoIpResult value, Instant expiresAt) {
 	}
 	
 	/**
-	 * Bundles related values that should travel together.
-	 * Keeping this nested record inside geographic internet protocol service prevents closely related
-	 * analytics values from drifting apart as separate arguments or map entries.
+	 * Keeps geolocation enrichment explicit even when the external lookup has little or no data.
+	 * Returning a small record here gives the success path and the failure fallback one shared contract.
 	 *
 	 * @param country country code
 	 */

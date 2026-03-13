@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Collects runtime analytics settings in one typed object.
- * That keeps environment-driven behavior discoverable and avoids repeated string-based configuration
- * lookups across the codebase.
+ * Keeps runtime analytics settings in one Spring-bound object.
+ * A typed home for these values makes deployment changes easier to audit and prevents services from
+ * duplicating property-key knowledge.
  */
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
@@ -21,9 +21,9 @@ public class AppProperties {
 	private int realtimeWindowMinutes;
 	
 	/**
-	 * Exposes tracker base address through typed configuration access.
-	 * Callers use this accessor so configuration keys do not leak through the codebase as repeated string
-	 * lookups.
+	 * Gives snippet and tracker-delivery code one shared origin.
+	 * Reading this through the properties object keeps embed URLs aligned with the environment that is
+	 * actually serving the tracker.
 	 *
 	 * @return configured tracker base address
 	 */
@@ -32,8 +32,9 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Allows Spring to bind tracker base address from external configuration.
-	 * The properties object stays mutable because framework binding populates it after bean construction.
+	 * Lets deployment configuration decide where tracker assets should point.
+	 * Spring binds the value here so different environments can publish the tracker from different hosts
+	 * without code changes.
 	 *
 	 * @param trackerBaseUrl tracker base address
 	 */
@@ -42,9 +43,9 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Exposes daily salt secret through typed configuration access.
-	 * Callers use this accessor so configuration keys do not leak through the codebase as repeated string
-	 * lookups.
+	 * Gives hashing code one place to obtain the rotating salt secret.
+	 * Centralizing the lookup keeps privacy-sensitive identifiers consistent across every request processed
+	 * on the same day.
 	 *
 	 * @return configured daily salt secret
 	 */
@@ -53,8 +54,8 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Allows Spring to bind daily salt secret from external configuration.
-	 * The properties object stays mutable because framework binding populates it after bean construction.
+	 * Lets operations rotate the daily hashing secret without recompiling the application.
+	 * Spring binds the secret here because the value belongs to deployment policy, not source code.
 	 *
 	 * @param dailySaltSecret daily salt secret
 	 */
@@ -63,9 +64,8 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Exposes data retention months through typed configuration access.
-	 * Callers use this accessor so configuration keys do not leak through the codebase as repeated string
-	 * lookups.
+	 * Gives the retention job a single source of truth for cleanup policy.
+	 * Keeping the window here makes privacy retention adjustable per deployment without changing code.
 	 *
 	 * @return configured data retention months
 	 */
@@ -74,8 +74,9 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Allows Spring to bind data retention months from external configuration.
-	 * The properties object stays mutable because framework binding populates it after bean construction.
+	 * Lets operators tighten or relax raw-data retention through configuration.
+	 * Spring binds the value here because the retention window is an environment decision, not a compile-time
+	 * constant.
 	 *
 	 * @param dataRetentionMonths data retention months
 	 */
@@ -84,9 +85,8 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Exposes aggregation lookback days through typed configuration access.
-	 * Callers use this accessor so configuration keys do not leak through the codebase as repeated string
-	 * lookups.
+	 * Gives the aggregation job a shared late-arrival safety window.
+	 * Reading the lookback from one place keeps scheduled refreshes and operational expectations in sync.
 	 *
 	 * @return configured aggregation lookback days
 	 */
@@ -95,8 +95,8 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Allows Spring to bind aggregation lookback days from external configuration.
-	 * The properties object stays mutable because framework binding populates it after bean construction.
+	 * Lets operations tune how aggressively aggregation jobs rescan recent traffic.
+	 * Spring binds the value here so late-event tolerance can change without a rebuild.
 	 *
 	 * @param aggregationLookbackDays aggregation lookback days
 	 */
@@ -105,9 +105,9 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Exposes real-time window minutes through typed configuration access.
-	 * Callers use this accessor so configuration keys do not leak through the codebase as repeated string
-	 * lookups.
+	 * Gives live dashboard queries one consistent definition of "recent".
+	 * Using a shared window length keeps real-time widgets aligned instead of letting each query invent its
+	 * own cutoff.
 	 *
 	 * @return configured real-time window minutes
 	 */
@@ -116,8 +116,9 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Allows Spring to bind real-time window minutes from external configuration.
-	 * The properties object stays mutable because framework binding populates it after bean construction.
+	 * Lets deployments decide how fresh "live" analytics should feel.
+	 * Spring binds the value here so operators can widen or tighten the real-time window without touching
+	 * query code.
 	 *
 	 * @param realtimeWindowMinutes real-time window minutes
 	 */
@@ -126,9 +127,8 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Exposes cross-origin resource sharing origins through typed configuration access.
-	 * Callers use this accessor so configuration keys do not leak through the codebase as repeated string
-	 * lookups.
+	 * Gives web configuration a deployment-specific allowlist for browser access.
+	 * Keeping origins here makes cross-origin policy changeable without editing controller or filter code.
 	 *
 	 * @return configured cross-origin resource sharing origins
 	 */
@@ -137,8 +137,9 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Allows Spring to bind cross-origin resource sharing origins from external configuration.
-	 * The properties object stays mutable because framework binding populates it after bean construction.
+	 * Lets each environment declare which browser origins may call the API.
+	 * Spring binds the allowlist here because cross-origin policy is an operational concern that changes
+	 * between deployments.
 	 *
 	 * @param corsOrigins cross-origin resource sharing origins
 	 */
@@ -147,10 +148,9 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Exposes geographic internet protocol application programming interface address through typed
-	 * configuration access.
-	 * Callers use this accessor so configuration keys do not leak through the codebase as repeated string
-	 * lookups.
+	 * Gives geographic enrichment one configurable upstream endpoint.
+	 * Keeping the provider URL here makes it possible to swap services or environments without rewriting the
+	 * enrichment code.
 	 *
 	 * @return configured geographic internet protocol application programming interface address
 	 */
@@ -159,9 +159,8 @@ public class AppProperties {
 	}
 	
 	/**
-	 * Allows Spring to bind geographic internet protocol application programming interface address from
-	 * external configuration.
-	 * The properties object stays mutable because framework binding populates it after bean construction.
+	 * Lets deployments choose the upstream geographic lookup endpoint.
+	 * Spring binds the value here so provider changes remain a configuration concern instead of a code change.
 	 *
 	 * @param geoIpApiUrl geographic internet protocol application programming interface address
 	 */

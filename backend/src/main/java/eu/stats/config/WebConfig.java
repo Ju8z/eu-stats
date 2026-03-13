@@ -28,9 +28,11 @@ public class WebConfig implements WebMvcConfigurer {
 	}
 	
 	/**
-	 * Just for Demo purpose to show /demo/ website.
+	 * Keeps the packaged demo reachable without introducing a dedicated controller.
+	 * Normalizing the trailing slash here makes the static demo behave the same way no matter how the entry
+	 * URL is typed.
 	 *
-	 * @param registry registry new path
+	 * @param registry view controller registry
 	 */
 	@Override
 	public void addViewControllers(ViewControllerRegistry registry) {

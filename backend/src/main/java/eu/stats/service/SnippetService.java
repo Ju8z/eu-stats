@@ -25,7 +25,7 @@ public class SnippetService {
 	 * That keeps tracker addresses correct across environments and prevents callers from reconstructing script
 	 * tags inconsistently.
 	 *
-	 * @param site site
+	 * @param site validated site whose identifier should be embedded in the tracker snippet
 	 * @return tracker snippet response
 	 */
 	public SnippetResponse buildSnippet(Site site) {

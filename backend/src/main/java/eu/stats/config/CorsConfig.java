@@ -39,6 +39,13 @@ public class CorsConfig implements WebMvcConfigurer {
 				.allowCredentials(true);
 	}
 	
+	/**
+	 * Expands configured origins into the patterns browsers actually send during local and deployed use.
+	 * Keeping the normalization here lets deployment config stay terse while still accepting the extra origin
+	 * shapes needed for local file previews and variable localhost ports.
+	 *
+	 * @return normalized origin patterns for Spring cross-origin matching
+	 */
 	private List<String> resolveAllowedOriginPatterns() {
 		List<String> origins = appProperties.getCorsOrigins();
 		

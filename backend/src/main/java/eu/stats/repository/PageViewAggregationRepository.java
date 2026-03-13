@@ -265,12 +265,29 @@ public class PageViewAggregationRepository {
     public int upsertEventStats(OffsetDateTime viewedSince) {
         return update(EVENT_STATS_SQL, viewedSince);
     }
-
-    private MapSqlParameterSource parameters(OffsetDateTime viewedSince) {
-        return new MapSqlParameterSource("viewedSince", viewedSince);
-    }
-
-    private int update(String sql, OffsetDateTime viewedSince) {
-        return namedParameterJdbcTemplate.update(sql, parameters(viewedSince));
-    }
+	
+	/**
+	 * Reuses one named parameter contract across every aggregation query.
+	 * Keeping binding creation in one place avoids subtle drift between SQL variants that all depend on the
+	 * same lower-bound timestamp.
+	 *
+	 * @param viewedSince lower viewed-at boundary
+	 * @return parameter source shared by the upsert queries
+	 */
+	private MapSqlParameterSource parameters(OffsetDateTime viewedSince) {
+		return new MapSqlParameterSource("viewedSince", viewedSince);
+	}
+	
+	/**
+	 * Routes every aggregate refresh through one JDBC execution path.
+	 * That keeps SQL execution and parameter binding behavior consistent even as individual upsert statements
+	 * evolve.
+	 *
+	 * @param sql         aggregation upsert statement
+	 * @param viewedSince lower viewed-at boundary
+	 * @return number of rows affected by the upsert
+	 */
+	private int update(String sql, OffsetDateTime viewedSince) {
+		return namedParameterJdbcTemplate.update(sql, parameters(viewedSince));
+	}
 }

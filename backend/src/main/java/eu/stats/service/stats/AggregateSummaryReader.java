@@ -57,6 +57,13 @@ public class AggregateSummaryReader {
 		return toSummaryTotals(pageViewRepository.summarizeRange(siteId, fromDate, toDate));
 	}
 	
+	/**
+	 * Converts nullable projection data into one explicit summary object.
+	 * That keeps the fallback decision focused on business meaning instead of repeating null handling.
+	 *
+	 * @param projection aggregate projection from the repository layer
+	 * @return normalized summary totals
+	 */
 	private SummaryTotals toSummaryTotals(OverviewAggregateProjection projection) {
 		if (projection == null) {
 			return SummaryTotals.empty();
@@ -65,14 +72,21 @@ public class AggregateSummaryReader {
 		return new SummaryTotals(longValue(projection.getTotalPageviews()), longValue(projection.getUniqueVisitors()));
 	}
 	
+	/**
+	 * Normalizes nullable aggregate counts before they enter summary logic.
+	 * Keeping that rule in one helper prevents repository nullability from leaking through the reader.
+	 *
+	 * @param value aggregate count that may be absent
+	 * @return numeric value safe for comparison and arithmetic
+	 */
 	private long longValue(Long value) {
 		return value == null ? 0L : value;
 	}
 	
 	/**
-	 * Bundles related values that should travel together.
-	 * Keeping this nested record inside aggregate summary reader prevents closely related analytics values
-	 * from drifting apart as separate arguments or map entries.
+	 * Keeps overview totals together while they move through fallback and comparison logic.
+	 * Using one record here makes it harder for page-view and visitor counts to drift out of sync across
+	 * readers and responses.
 	 *
 	 * @param totalPageviews total page views
 	 * @param uniqueVisitors unique visitors

@@ -254,6 +254,14 @@ public class StatsService {
 		return realTimeService.getRealtime(siteId);
 	}
 	
+	/**
+	 * Collapses raw device rows into the exact slices the dashboard expects.
+	 * Doing the grouping here keeps repository queries storage-oriented while the response model stays stable
+	 * even if the underlying dimensions grow more detailed.
+	 *
+	 * @param rows raw device breakdown rows
+	 * @return device response shaped for dashboard charts
+	 */
 	private DeviceStatsResponse buildDeviceStatsResponse(List<DeviceBreakdownProjection> rows) {
 		Map<String, Long> visitsByDeviceType = new HashMap<>();
 		Map<TechnologyKey, Long> visitsByOperatingSystem = new HashMap<>();
@@ -272,6 +280,13 @@ public class StatsService {
 				toTechItems(visitsByOperatingSystem));
 	}
 	
+	/**
+	 * Applies presentation ordering only after device totals have been merged.
+	 * Keeping sorting here avoids leaking chart concerns back into the aggregation loop.
+	 *
+	 * @param visitsByDeviceType merged visit totals by device label
+	 * @return sorted device chart items
+	 */
 	private List<DeviceStatsResponse.DeviceItem> toDeviceItems(Map<String, Long> visitsByDeviceType) {
 		return visitsByDeviceType.entrySet().stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
@@ -281,6 +296,14 @@ public class StatsService {
 				.toList();
 	}
 	
+	/**
+	 * Applies the dashboard cap after operating-system totals have been combined.
+	 * Limiting here ensures the chart keeps the real leaders instead of trimming detail too early during
+	 * accumulation.
+	 *
+	 * @param visitsByTechnology merged visit totals by operating-system key
+	 * @return sorted operating-system chart items
+	 */
 	private List<DeviceStatsResponse.TechItem> toTechItems(Map<TechnologyKey, Long> visitsByTechnology) {
 		return visitsByTechnology.entrySet().stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
@@ -292,14 +315,36 @@ public class StatsService {
 				.toList();
 	}
 	
+	/**
+	 * Treats missing aggregate counts as zero before totals are merged or sorted.
+	 * That keeps breakdown ranking deterministic even when repository projections omit a value.
+	 *
+	 * @param row raw breakdown projection
+	 * @return visit count with nulls normalized to zero
+	 */
 	private long visits(DeviceBreakdownProjection row) {
 		return row.getVisits() == null ? 0L : row.getVisits();
 	}
 	
+	/**
+	 * Converts blank storage values into intentional labels before they reach the client.
+	 * Normalizing once here keeps chart legends stable across breakdown endpoints.
+	 *
+	 * @param value candidate label value
+	 * @param fallback fallback label when the value is blank
+	 * @return normalized non-blank label
+	 */
 	private String defaultString(String value, String fallback) {
 		return value == null || value.isBlank() ? fallback : value;
 	}
 	
+	/**
+	 * Expands stored country codes on the server so the frontend stays free of locale lookup logic.
+	 * That keeps geography charts readable without shipping a second country-name mapping layer.
+	 *
+	 * @param countryCode stored country code
+	 * @return display-friendly country label
+	 */
 	private String countryName(String countryCode) {
 		if (countryCode == null || countryCode.isBlank()) {
 			return UNKNOWN_LABEL;
@@ -311,6 +356,15 @@ public class StatsService {
 		return name.isBlank() ? countryCode : name;
 	}
 	
+	/**
+	 * Centralizes comparison math for overview cards.
+	 * Handling zero baselines in one helper keeps every percentage card consistent on edge cases that would
+	 * otherwise invite ad hoc formulas.
+	 *
+	 * @param current current metric value
+	 * @param previous previous-window metric value
+	 * @return rounded percentage change for the overview response
+	 */
 	private double percentChange(double current, double previous) {
 		if (previous == 0.0) {
 			return current == 0.0 ? 0.0 : 100.0;
@@ -319,6 +373,13 @@ public class StatsService {
 		return Math.round(((current - previous) / previous) * 1000.0) / 10.0;
 	}
 	
+	/**
+	 * Keeps operating-system name and version paired while rows are being merged.
+	 * Using a dedicated key avoids string-concatenation rules leaking into the grouping logic.
+	 *
+	 * @param name technology name
+	 * @param version technology version
+	 */
 	private record TechnologyKey(String name, String version) {
 	}
 }

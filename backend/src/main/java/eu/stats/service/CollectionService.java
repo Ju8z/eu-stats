@@ -75,6 +75,15 @@ public class CollectionService {
 				payload.siteId(), payload.eventType(), pageView.getViewedAt());
 	}
 	
+	/**
+	 * Concentrates ingestion-time enrichment in one place.
+	 * Building the entity here keeps hashing, referrer cleanup, and geo or user-agent defaults aligned
+	 * whenever a tracker payload becomes a stored analytics row.
+	 *
+	 * @param payload  tracking payload
+	 * @param clientIp client internet protocol address used for enrichment
+	 * @return enriched page view ready for persistence
+	 */
 	private PageView buildPageView(CollectPayload payload, String clientIp) {
 		String visitorHash = visitorHashService.hashVisitor(payload.siteId(), clientIp, payload.userAgent());
 		GeoIpService.GeoIpResult geoIpResult = geoIpService.resolve(clientIp);
@@ -101,6 +110,14 @@ public class CollectionService {
 				OffsetDateTime.now(clock));
 	}
 	
+	/**
+	 * Falls back to server time when the tracker clock cannot be trusted.
+	 * That keeps ingestion resilient to malformed timestamps instead of dropping events that are otherwise
+	 * useful for analytics.
+	 *
+	 * @param timestamp client-supplied event timestamp
+	 * @return parsed timestamp or the current server time when parsing fails
+	 */
 	private OffsetDateTime parseViewedAt(String timestamp) {
 		try {
 			return OffsetDateTime.parse(timestamp);
@@ -109,6 +126,14 @@ public class CollectionService {
 		}
 	}
 	
+	/**
+	 * Collapses page addresses down to the stable path dimension used by reports.
+	 * Removing blank values, query noise, and local demo prefixes prevents one page from fragmenting into
+	 * several analytics rows that should really count together.
+	 *
+	 * @param url reported page address from the tracker
+	 * @return normalized path segment used for aggregation
+	 */
 	private String sanitizePath(String url) {
 		if (url == null || url.isBlank()) {
 			return "/";

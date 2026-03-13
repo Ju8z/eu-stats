@@ -154,6 +154,13 @@ public class SiteService {
 				.orElseThrow(() -> new SiteNotFoundException("Site not found"));
 	}
 	
+	/**
+	 * Rejects malformed domains before they can become persistent identifiers.
+	 * Keeping validation here protects every create and update path from storing values that would later make
+	 * snippet generation, matching, or reporting unreliable.
+	 *
+	 * @param domain user-supplied domain value
+	 */
 	private void validateDomain(String domain) {
 		String value = domain == null ? "" : domain.trim().toLowerCase();
 		int colonIndex = value.lastIndexOf(':');
@@ -171,20 +178,52 @@ public class SiteService {
 		}
 	}
 	
+	/**
+	 * Reuses the same comparison window that the site list advertises to users.
+	 * Keeping the range calculation in one helper prevents the administration summary cards from drifting as
+	 * the default lookback window evolves.
+	 *
+	 * @return last-thirty-day reporting window
+	 */
 	private DateUtil.DateRange last30DaysRange() {
 		LocalDate today = LocalDate.now(clock);
 		return new DateUtil.DateRange(today.minusDays(29), today);
 	}
 	
+	/**
+	 * Keeps the public response mapping behind one path.
+	 * Reusing this helper makes sure every site-facing endpoint applies the same summary lookback and field
+	 * ordering.
+	 *
+	 * @param site resolved site entity
+	 * @return site response enriched with the default summary window
+	 */
 	private SiteResponse toSiteResponse(Site site) {
 		AggregateSummaryReader.SummaryTotals summaryTotals = summaryForLast30Days(site.getId());
 		return toSiteResponse(site, summaryTotals.totalPageviews(), summaryTotals.uniqueVisitors());
 	}
 	
+	/**
+	 * Hides the default administration lookback behind a descriptive name.
+	 * That keeps response mapping code focused on intent rather than repeating date-range plumbing.
+	 *
+	 * @param siteId site identifier
+	 * @return summary totals for the default administration window
+	 */
 	private AggregateSummaryReader.SummaryTotals summaryForLast30Days(Long siteId) {
 		return aggregateSummaryReader.readTotals(siteId, last30DaysRange());
 	}
 	
+	/**
+	 * Builds the response from already-resolved totals when callers have them on hand.
+	 * Separating this mapping step avoids duplicate field-ordering code across create, read, and update
+	 * paths.
+	 *
+	 * @param site resolved site entity
+	 * @param totalPageviewsLast30Days page views from the default administration window
+	 * @param uniqueVisitorsLast30Days unique visitors from the default administration window
+	 * @return site response with summary totals attached
+	 */
 	private SiteResponse toSiteResponse(Site site, long totalPageviewsLast30Days, long uniqueVisitorsLast30Days) {
 		return new SiteResponse(
 				site.getId(),
