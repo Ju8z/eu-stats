@@ -94,7 +94,7 @@ export default function SiteAnalyticsPage() {
             { stats.overview && stats.overview.totalPageviews === 0 && (
                 <EmptyState
                     title="No analytics yet"
-                    description="Open the demo pages with the correct ?siteId= value or add the tracker snippet to your site."
+                    description="Add the tracker snippet to your site to start collecting analytics."
                 />
             ) }
 

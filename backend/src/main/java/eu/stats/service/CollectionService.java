@@ -128,8 +128,8 @@ public class CollectionService {
 	
 	/**
 	 * Collapses page addresses down to the stable path dimension used by reports.
-	 * Removing blank values, query noise, and local demo prefixes prevents one page from fragmenting into
-	 * several analytics rows that should really count together.
+	 * Removing blank values and query noise prevents one page from fragmenting into several analytics rows
+	 * that should really count together.
 	 *
 	 * @param url reported page address from the tracker
 	 * @return normalized path segment used for aggregation
@@ -144,14 +144,6 @@ public class CollectionService {
 			String path = uri.getPath();
 			if (path == null || path.isBlank()) {
 				return "/";
-			}
-			
-			if ("file".equalsIgnoreCase(uri.getScheme())) {
-				String normalizedPath = path.replace('\\', '/');
-				int demoSegmentIndex = normalizedPath.lastIndexOf("/demo/");
-				if (demoSegmentIndex >= 0) {
-					return normalizedPath.substring(demoSegmentIndex);
-				}
 			}
 			
 			return path;

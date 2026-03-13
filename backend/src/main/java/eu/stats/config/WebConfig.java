@@ -3,8 +3,6 @@ package eu.stats.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Creates shared web-related infrastructure beans.
@@ -12,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * business services.
  */
 @Configuration
-public class WebConfig implements WebMvcConfigurer {
+public class WebConfig {
 	
 	/**
 	 * Registers a shared web client bean.
@@ -27,16 +25,4 @@ public class WebConfig implements WebMvcConfigurer {
 		return builder.build();
 	}
 	
-	/**
-	 * Keeps the packaged demo reachable without introducing a dedicated controller.
-	 * Normalizing the trailing slash here makes the static demo behave the same way no matter how the entry
-	 * URL is typed.
-	 *
-	 * @param registry view controller registry
-	 */
-	@Override
-	public void addViewControllers(ViewControllerRegistry registry) {
-		registry.addRedirectViewController("/demo", "/demo/");
-		registry.addViewController("/demo/").setViewName("forward:/demo/index.html");
-	}
 }
